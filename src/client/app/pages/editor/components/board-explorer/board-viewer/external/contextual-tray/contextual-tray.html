@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <title>contextual-tray demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../bower_components/iron-demo-helpers/demo-snippet.html">
+
+    <link rel="import" href="../otc-tray.html">
+
+    <style is="custom-style" include="demo-pages-shared-styles">
+    </style>
+  </head>
+  <body unresolved>
+
+    <contextual-tray>
+      <div main> <div on-tap="toggleTray">toggle</div>
+Main panel content</div>
+      <div header>Header content <div on-tap="closeTray">toggle</div>
+      <div on-tap="closeTray">close</div>
+      </div>
+      <div tray>Tray content</div>
+    </contextual-tray>
+
+  </body>
+</html>

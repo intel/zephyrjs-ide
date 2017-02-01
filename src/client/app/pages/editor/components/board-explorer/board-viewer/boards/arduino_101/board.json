@@ -1,0 +1,309 @@
+{
+  "title": "Arduino 101 - Intel Curie Module Based Board",
+  "views": {
+    "front": {
+      "image": "arduino_101.svg",
+      "components": {
+        "J17": {
+          "name": "USB",
+          "description": "USB"
+        },
+        "J16": {
+          "name": "Power",
+          "description": "5V DC barrel plug",
+          "attribution": true
+        },
+        "CPU": {
+          "name": "Intel Quark C1000",
+          "description": "Intel Quark C1000"
+        },
+        "J10": {
+          "name": "10 Pin Socket",
+          "pins": {
+            "1": {
+              "description": "ATN",
+              "name": "ATN",
+              "portPin": "12",
+              "type": "female"
+            },
+            "2": {
+              "description": "IOREF",
+              "name": "IOREF",
+              "portPin": "12",
+              "type": "female"
+            },
+            "3": {
+              "description": "RESET",
+              "name": "RST",
+              "portPin": "12",
+              "type": "female"
+            },
+            "4": {
+              "description": "3.3V VDD",
+              "name": "3V_VDD",
+              "portPin": "3.3V",
+              "keywords": [ "vdd" ],
+              "type": "female"
+            },
+            "5": {
+              "description": "5V VDD",
+              "name": "5V_VDD",
+              "portPin": "5V",
+              "keywords": [ "vdd" ],
+              "type": "female"
+            },
+            "6": {
+              "description": "GROUND",
+              "name": "GND",
+              "portPin": "GND",
+              "keywords": [ "gnd" ],
+              "type": "female"
+            },
+            "7": {
+              "description": "GROUND",
+              "name": "GND",
+              "portPin": "GND",
+              "keywords": [ "gnd" ],
+              "type": "female"
+            },
+            "8": {
+              "description": "VIN",
+              "name": "VIN",
+              "portPin": "Vin",
+              "type": "female"
+            }
+          }
+        },
+        "J11": {
+          "name": "10 Pin Socket",
+          "pins": {
+            "1": {
+              "description": "GPIO",
+              "name": "GPIO8",
+              "portPin": "8",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "2": {
+              "description": "GPIO PWM9",
+              "name": "GPIO9/PWM9",
+              "portPin": "~9",
+              "keywords": [ "gpio", "pwm" ],
+              "type": "female"
+            },
+            "3": {
+              "description": "GPIO SS",
+              "name": "GPIO10/SS",
+              "portPin": "10",
+              "keywords": [ "gpio", "ss" ],
+              "type": "female"
+            },
+            "4": {
+              "description": "GPIO MOSI",
+              "name": "GPIO11/MOSI",
+              "portPin": "11",
+              "keywords": [ "gpio", "spi" ],
+              "type": "female"
+            },
+            "5": {
+              "description": "GPIO MISO",
+              "name": "GPIO12/MISO",
+              "portPin": "12",
+              "keywords": [ "gpio", "spi" ],
+              "type": "female"
+            },
+            "6": {
+              "description": "GPIO SCK",
+              "name": "GPIO13/SCK",
+              "portPin": "13",
+              "keywords": [ "gpio", "spi" ],
+              "type": "female"
+            },
+            "7": {
+              "description": "GROUND",
+              "name": "GND",
+              "portPin": "GND",
+              "keywords": [ "gnd" ],
+              "type": "female"
+            },
+            "8": {
+              "description": "AREF",
+              "name": "AREF",
+              "portPin": "AREF",
+              "keywords": [ "aref" ],
+              "type": "female"
+            },
+            "9": {
+              "description": "I2C SDA",
+              "name": "I2C_SDA/I2C Master/Slave",
+              "portPin": "SDA",
+              "keywords": [ "i2c" ],
+              "type": "female"
+            },
+            "10": {
+              "description": "I2C SCL",
+              "name": "I2C_SCL/I2C Master/Slave",
+              "portPin": "SCL",
+              "keywords": [ "i2c" ],
+              "type": "female"
+            }
+          }
+        },
+        "J12": {
+          "name": "2x3 Pin Header",
+          "pins": {
+            "1": {
+              "description": "IO MISO",
+              "name": "IO12/MISO",
+              "portPin": "ICSP-1",
+              "keywords": [ "spi" ],
+              "type": "male"
+            },
+            "2": {
+              "description": "3.3V VDD",
+              "name": "3.3V_VDD",
+              "portPin": "ICSP-2",
+              "keywords": [ "vdd" ],
+              "type": "male"
+            },
+            "3": {
+              "description": "SCK",
+              "name": "SCK",
+              "portPin": "ICSP-3",
+              "keywords": [ "spi" ],
+              "type": "male"
+            },
+            "4": {
+              "description": "IO MOSI",
+              "name": "IO11/MOSI",
+              "portPin": "ICSP-4",
+              "keywords": [ "spi" ],
+              "type": "male"
+            },
+            "5": {
+              "description": "RESET",
+              "name": "RST",
+              "portPin": "ICSP-5",
+              "type": "male"
+            },
+            "6": {
+              "description": "GROUND",
+              "name": "GND",
+              "portPin": "ICSP-6",
+              "keywords": [ "gnd" ],
+              "type": "male"
+            }
+          }
+        },
+        "J13": {
+          "name": "8 Pin Socket",
+          "pins": {
+            "1": {
+              "description": "GPIO RX",
+              "name": "GPIO0/RX1",
+              "portPin": "RX<-0",
+              "keywords": [ "gpio", "uart" ],
+              "type": "female"
+            },
+            "2": {
+              "description": "GPIO TX",
+              "name": "GPIO1/TX1",
+              "portPin": "TX->1",
+              "keywords": [ "gpio", "uart" ],
+              "type": "female"
+            },
+            "3": {
+              "description": "GPIO",
+              "name": "GPIO2",
+              "portPin": "2",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "4": {
+              "description": "GPIO PWM",
+              "name": "GPIO3/PWM3",
+              "portPin": "-3",
+              "keywords": [ "gpio", "pwm" ],
+              "type": "female"
+            },
+            "5": {
+              "description": "GPIO",
+              "name": "GPIO4",
+              "portPin": "4",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "6": {
+              "description": "GPIO PWM",
+              "name": "GPIO5/PWM5",
+              "portPin": "~5",
+              "keywords": [ "gpio", "pwm" ],
+              "type": "female"
+            },
+            "7": {
+              "description": "GPIO PWM",
+              "name": "GPIO6/PWM6",
+              "portPin": "~6",
+              "keywords": [ "gpio", "pwm" ],
+              "type": "female"
+            },
+            "8": {
+              "description": "GPIO",
+              "name": "GPIO7",
+              "portPin": "7",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            }
+          }
+        },
+        "J14": {
+          "name": "6 Pin Sockett",
+          "pins": {
+            "1": {
+              "description": "GPIO ADC",
+              "name": "GPIO14/ADC0",
+              "portPin": "A0",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "2": {
+              "description": "GPIO",
+              "name": "GPIO15/ADC1",
+              "portPin": "A1",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "3": {
+              "description": "GPIO ADC",
+              "name": "GPIO16/ADC2",
+              "portPin": "A2",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "4": {
+              "description": "GPIO ADC",
+              "name": "GPIO17/ADC3",
+              "portPin": "A3",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "5": {
+              "description": "GPIO ADC",
+              "name": "GPIO18/ADC4",
+              "portPin": "A4",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "6": {
+              "description": "GPIO ADC",
+              "name": "GPIO19/ADC5",
+              "portPin": "A5",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            }
+          }
+        }
+      }
+    }
+  }
+}

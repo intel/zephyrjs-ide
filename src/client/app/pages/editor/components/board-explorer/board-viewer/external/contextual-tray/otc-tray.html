@@ -1,0 +1,394 @@
+<!--
+Copyright (c) 2016 Intel Corporation. All rights reserved.
+
+Based on concepts from Polymer's paper-drawer-panel:
+
+https://github.com/PolymerElements/paper-drawer-panel/blob/241c0e78/paper-drawer-panel.html
+
+Provided under the following:
+
+paper-drawer-panel copyright: Copyright (c) 2015 The Polymer Project Authors.
+paper-drawer-panel license : http://polymer.github.io/LICENSE.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+
+<!--
+
+`otc-tray` contains a tray with an optional header, and a main panel.
+The tray is typically hidden. If there is a header, only the header is visible
+in the `collapsed` state. If closed, even the header is hidden.
+
+The concept is simillar to the paper-drawer-panel, only vertically oriented
+and with the optional header element.
+
+The header is typically used for quick link access to open the tray and
+select the active page.
+-->
+
+<dom-module id="otc-tray">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      iron-selector > #tray {
+        position: absolute;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+
+      .transition > #tray {
+        transition: -webkit-transform ease-in-out 0.3s, height ease-in-out 0.3s, visibility 0.3s;
+        transition: transform ease-in-out 0.3s, height ease-in-out 0.3s, visibility 0.3s;
+      }
+
+      #tray #main {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      .transition > #main {
+        transition: top ease-in-out 0.3s, padding ease-in-out 0.3s;
+      }
+
+      #main > ::content > [main] {
+        width: 100%;
+        @apply(--otc-tray-main-container);
+      }
+
+      #tray > ::content > [tray] {
+        width: 100%;
+      }
+
+      #scrim {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity ease-in-out 0.38s, visibility ease-in-out 0.38s;
+        background-color: rgba(0, 0, 0, 0.3);
+
+        @apply(--otc-tray-scrim);
+      }
+
+      #tray #header {
+        height: auto;
+        @apply(--otc-tray-header-container);
+      }
+
+      #tray #container {
+        right: 0;
+        left: 0;
+        position: absolute;
+        @apply(--otc-tray-tray-container);
+      }
+
+      :host[closed] #tray {
+        webkitTransform: translateY(100%);
+        transform: translateY(100%);
+      }
+
+      #tray.iron-selected:not([closed]) {
+        box-shadow: 2px -2px 4px rgba(0, 0, 0, 0.15);
+      }
+
+      :host:not[disable-scrim] #main:not(.iron-selected) > #scrim {
+        visibility: visible;
+        opacity: var(--otc-tray-scrim-opacity, 1);
+      }
+    </style>
+
+    <iron-selector
+        attr-for-selected="id"
+        class$="[[_computeIronSelectorClass(_transition)]]"
+        activate-event=""
+        selected="[[selected]]">
+
+      <div id="main" style$="[[_computeMainStyle()]]">
+        <content select="[main]"></content>
+        <div id="scrim" on-tap="collapseTray"></div>
+      </div>
+
+      <div id="tray" style$="[[_computeTrayStyle(trayHeight, collapsed, selected)]]">
+        <div id="header">
+          <content select="[header]"></content>
+        </div>
+        <div id="container" style$="[[_computeContainerStyle(trayHeight, collapsed, selected)]]">
+          <content select="[tray]"></content>
+        </div>
+      </div>
+
+    </iron-selector>
+  </template>
+
+  <script>
+    'use strict';
+
+    Polymer({
+      is: 'otc-tray',
+
+      properties: {
+        /**
+        * The panel that is being selected. `tray` for the tray panel and
+        * `main` for the main panel.
+        *
+        * @type {string|null}
+        */
+        selected: {
+          reflectToAttribute: true,
+          notify: true,
+          type: String,
+          value: "main"
+        },
+
+        opened: {
+          type: Boolean,
+          computed: "_computeOpen(selected, collapsed)",
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+        * Whether the transition is enabled.
+        */
+        _transition: {
+          type: Boolean,
+          value: false
+        },
+
+        trayHeight: {
+          type: Number,
+          value: 0.66
+        },
+
+        collapsed: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+          notify: true
+        },
+
+        closed: {
+          type: Boolean,
+          computed: "_computeClosed(selected, collapsed)",
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        mainVisibleHeight: {
+          type: Number,
+          reflectToAttribute: true,
+          notify: true
+        }
+      },
+
+      behaviors: [Polymer.IronResizableBehavior],
+
+      listeners: {
+        'iron-resize': '_onIronResize',
+        transitionend: '_onTransitionEnd'
+      },
+
+      _computeOpen: function(selected, collapsed) {
+        return (selected !== 'main') && !collapsed;
+      },
+
+      _computeClosed: function(selected, collapsed) {
+        return (selected === 'main') && !collapsed;
+      },
+
+      _onTransitionEnd: function (e) {
+        var target = Polymer.dom(e).localTarget;
+        if (target !== this) {
+          // ignore events coming from the light dom
+          return;
+        }
+
+        if (e.propertyName === 'height' || e.propertyName === 'transform') {
+          var parent = this.getBoundingClientRect(),
+            tray = this.$.tray.getBoundingClientRect();
+          this.mainVisibleHeight = tray.top - parent.top;
+        }
+
+        if (e.propertyName === 'height' || e.propertyName === 'transform') {
+          var parent = this.getBoundingClientRect(),
+            tray = this.$.tray.getBoundingClientRect();
+          this.mainVisibleHeight = tray.top - parent.top;
+        }
+
+        if (e.propertyName === 'left' || e.propertyName === 'right') {
+          this.notifyResize();
+        }
+        if (e.propertyName === 'transform' && this.selected === 'tray') {
+/*          var focusedChild = this._getAutoFocusedNode();
+          focusedChild && focusedChild.focus();
+*/      }
+      },
+
+      _onIronResize: function() {
+        this.$.tray.style.cssText = this._computeTrayStyle(this.trayHeight, this.collapsed, this.selected);
+        this.$.container.style.cssText = this._computeContainerStyle(this.trayHeight, this.collapsed, this.selected);
+      },
+
+      /**
+       * Toggles the tray open and closed.
+       *
+       * @method toggleTray
+       */
+      toggleTray: function() {
+        if (this._isMainSelected()) {
+          this.openTray();
+        } else {
+          this.collapseTray();
+        }
+      },
+
+      _isMainSelected: function() {
+        return this.selected === 'main';
+      },
+
+      /**
+       * Opens the tray.
+       *
+       * @method openTray
+       */
+      openTray: function() {
+        this.selected = 'tray';
+        this.collapsed = false;
+        this.updateStyles();
+      },
+
+      /**
+       * Closes the tray (header obscured)
+       *
+       * NOTE: If no header is defined, closeTray and collapseTray have
+       * the same effect.
+       *
+       * @method closeTray
+       */
+      closeTray: function() {
+        this.selected = 'main';
+        this.collapsed = false;
+        this.updateStyles();
+      },
+
+      /**
+       * Collapses the tray (header remains visible)
+       *
+       * @method collapseTray
+       */
+      collapseTray: function() {
+        console.log('Collapsing otc-tray');
+        this.selected = 'main';
+        this.collapsed = true;
+        this.updateStyles();
+      },
+
+      updateTray: function() {
+        this._onIronResize();
+      },
+
+      _computeIronSelectorClass: function(transition) {
+        var classes = '';
+        /* For now we only support bottom-tray */
+        var topTray = false;
+        if (topTray) {
+          classes = 'top-tray';
+        } else {
+          classes = 'bottom-tray';
+        }
+        if (transition) {
+          classes += ' transition';
+        }
+        return classes;
+      },
+
+      _computeMainStyle: function(trayHeight) {
+        return '';
+      },
+
+      _computeTrayStyle: function(trayHeight, collapsed, selected) {
+        var maxHeight = Math.round(this.offsetHeight * trayHeight),
+          tmp = this.$.container.style.height, necessary, style ='';
+
+        /* If the main content is selected then the tray is either closed
+         * or collapsed, so adjust the position of the tray.*/
+        if (selected === 'main') {
+          var transform = 'translateY(100%)';
+          if (collapsed) {
+            /* Tray is not closed  all the way--it is only collapsed to the
+             * header */
+             transform += ' translateY(-' + this.$.header.offsetHeight + 'px)';
+          }
+
+          transform = '-transform:' + transform + ';';
+
+          [ '-webkit', '-ms', '-moz', '-o' ].forEach(function(prefix) {
+            style += prefix + transform;
+          });
+
+          style += 'transform:' + transform;
+        }
+
+        /* Trigger the container to recalculate its scrollHeight */
+        this.$.container.style.height = 'auto';
+        Polymer.dom.flush();
+        necessary = this.$.container.scrollHeight + this.$.header.offsetHeight;
+        this.$.container.style.height = tmp;
+
+        return style + 'height: ' + Math.round(Math.min(maxHeight, necessary)) + 'px;';
+      },
+
+      /* Setting the height for the container enables scrolling within the
+       * tray for content that is larger than the client area */
+      _computeContainerStyle: function(trayHeight, collapsed, selected) {
+        var maxHeight = (Math.round(this.offsetHeight * trayHeight) - this.$.header.offsetHeight),
+          tmp = this.$.container.style.height, necessary;
+
+          /* Trigger the container to recalculate its scrollHeight */
+        this.$.container.style.height = 'auto';
+        Polymer.dom.flush();
+        necessary = this.$.container.scrollHeight;
+        this.$.container.style.height = tmp;
+
+        if (maxHeight > this.$.container.scrollHeight) {
+          return 'height: ' + necessary + 'px;';
+        } else {
+          return 'height: ' + maxHeight + 'px';
+        }
+      },
+
+      attached: function() {
+        var self = this;
+      },
+
+      ready: function() {
+        // Avoid transition at the beginning e.g. page loads and enable
+        // transitions only after the element is rendered and ready.
+        this._transition = true;
+      }
+    });
+  </script>
+</dom-module>

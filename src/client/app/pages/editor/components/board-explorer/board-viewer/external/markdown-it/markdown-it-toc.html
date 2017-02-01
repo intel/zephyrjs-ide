@@ -1,0 +1,95 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<script src="../../bower_components/slug/slug.js"></script>
+
+<dom-module id='markdown-it-toc'>
+  <template>
+    <content></content>
+    <paper-menu id="menu" selected={{selected}}>
+      <template is="dom-repeat" items="{{headers}}">
+        <paper-item>{{item}}</paper-item>
+      </template>
+    </paper-menu>
+  </template>
+
+  <script>
+    "use strict";
+    Polymer({
+      is: "markdown-it-toc",
+      properties: {
+        slugs: {
+          type: Array,
+          value: []
+        },
+        headers: {
+          type: Array,
+          value: []
+        },
+        selected: {
+          type: Number,
+          value: 0,
+          observer: '_menuSelected'
+        },
+        markdown: {
+          type: String,
+          value: "",
+          observer: '_markdownChanged'
+        },
+        target: {
+          type: Object,
+          value: null,
+          readonly: true
+        }
+      },
+      _menuSelected: function(value) {
+        var target = document.querySelector('[slug="'+this.slugs[value]+'"]');
+        if (target) {
+          var parent = target.offsetParent, y = target.offsetTop - 8;
+          while (parent && parent.tagName != "PAPER-DRAWER-PANEL") {
+            y += parent.offsetTop;
+            parent = parent.offsetParent;
+          }
+
+          if (!parent) {
+            return;
+          }
+
+          parent.scrollTop = Math.min(y, parent.scrollHeight - parent.clientHeight);
+        }
+      },
+      updateTOC: function(event) {
+        var headers = event.detail.querySelectorAll('h1,h2,h3,h4'),
+          self = this;
+        self.headers = [];
+        self.slugs = [];
+        Array.prototype.forEach.call(headers, function(el) {
+          var marker = slug(el.textContent);
+          el.setAttribute('slug', marker)
+          self.push('headers', el.textContent);
+          self.push('slugs', marker);
+        });
+      },
+      _markdownChanged: function(value) {
+        if (this.target) {
+          this.target.removeEventListener('content-ready',
+              this.updateTOC.bind(this));
+          this.target = null;
+        }
+        if (value && value != '') {
+          this.target = document.getElementById(value);
+        }
+        if (this.target) {
+          this.target.addEventListener('content-ready',
+              this.updateTOC.bind(this));
+        }
+      },
+      attached: function() {
+        if (this.markdown) {
+          this._markdownChanged(this.markdown);
+        }
+      }
+    });
+  </script>
+</dom-module>

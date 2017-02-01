@@ -1,0 +1,211 @@
+{
+  "title": "tinyTILE - Intel Curie Module Based Board",
+  "views": {
+    "front": {
+      "image": "tinyTILE.svg",
+      "components": {
+        "J3": {
+          "name": "microUSB",
+          "description": "microUSB"
+        },
+        "CPU": {
+          "name": "Intel Quark C1000",
+          "description": "Intel Quark C1000"
+        },
+        "J1": {
+          "name": "14 Pin Header Breakout",
+          "pins": {
+            "1": {
+              "description": "SPI Serial Clock",
+              "name": "ATP_SPI_S_SCK/SPI1_M_SCK",
+              "portPin": "13",
+              "keywords": [ "spi" ],
+              "type": "female"
+            },
+            "2": {
+              "description": "SPI Master In / Slave Out",
+              "name": "ATP_SPI_S_MISO / SPI1_M_MISO",
+              "portPin": "12",
+              "keywords": [ "spi" ],
+              "type": "female"
+            },
+            "3": {
+              "description": "SPI Master Out / Slave In",
+              "name": "ATP_SPI_S_MOSI/SPI1_M_MOSIs",
+              "portPin": "11",
+              "keywords": [ "spi" ],
+              "type": "female"
+            },
+            "4": {
+              "description": "SPI Slave Select",
+              "name": "ATP_SPI_S_CS/SPI21_M_CSo",
+              "portPin": "10",
+              "keywords": [ "spi" ],
+              "type": "female"
+            },
+            "5": {
+              "description": "PWM3 output",
+              "name": "PWM3_OUT",
+              "portPin": "~9",
+              "keywords": [ "pwm" ],
+              "type": "female"
+            },
+            "6": {
+              "description": "I2S Receiver Serial Clock",
+              "name": "I2S_RSCK/PLT_CLK_o",
+              "portPin": "8",
+              "keywords": [ "i2s" ],
+              "type": "female"
+            },
+            "7": {
+              "description": "I2S Transmit",
+              "name": "I2S_TXD/IO20_3V_IO7",
+              "portPin": "7",
+              "keywords": [ "i2s" ],
+              "type": "female"
+            },
+            "8": {
+              "description": "PWM2 output",
+              "name": "PWM2_OUT",
+              "portPin": "~6",
+              "keywords": [ "pwm" ],
+              "type": "female"
+            },
+            "9": {
+              "description": "PWM1 output",
+              "name": "PWM1_OUT",
+              "portPin": "~5",
+              "keywords": [ "pwm" ],
+              "type": "female"
+            },
+            "10": {
+              "description": "I2S Transmit Word Select",
+              "name": "I2S_TWS",
+              "portPin": "4",
+              "keywords": [ "i2s" ],
+              "type": "female"
+            },
+            "11": {
+              "description": "PWM0 output",
+              "name": "PWM0_OUT",
+              "portPin": "~3",
+              "keywords": [ "pwm" ],
+              "type": "female"
+            },
+            "12": {
+              "description": "I2S Transmit Serial Clock",
+              "name": "I2S_TSCK",
+              "portPin": "2",
+              "keywords": [ "i2s" ],
+              "type": "female"
+            },
+            "13": {
+              "description": "UART1 Transmit",
+              "name": "USRT1_TX",
+              "portPin": "TX1",
+              "keywords": [ "uart" ],
+              "type": "female"
+            },
+            "14": {
+              "description": "UART1 Receive",
+              "name": "UART1_RX",
+              "portPin": "RX0",
+              "keywords": [ "uart" ],
+              "type": "female"
+            }
+          }
+        },
+        "J5": {
+          "name": "14 Pin Header Breakout",
+          "pins": {
+            "1": {
+              "description": "5V USB",
+              "name": "USB_5P00_PWR",
+              "type": "female"
+            },
+            "2": {
+              "description": "Ground",
+              "name": "GND",
+              "type": "female"
+            },
+            "3": {
+              "description": "Vin",
+              "name": "VIN",
+              "type": "female"
+            },
+            "4": {
+              "description": "Ground",
+              "name": "GND",
+              "type": "female"
+            },
+            "5": {
+              "description": "3.3V",
+              "name": "3V3",
+              "portPin": "12",
+              "type": "female"
+            },
+            "6": {
+              "description": "I2C SDA",
+              "name": "I2Co_SDA/I2C Master/Slave",
+              "portPin": "SDA",
+              "keywords": [ "i2c" ],
+              "type": "female"
+            },
+            "7": {
+              "description": "I2C SCL",
+              "name": "I2Co_SCL/I2C Master/Slave",
+              "portPin": "SCL",
+              "keywords": [ "i2c" ],
+              "type": "female"
+            },
+            "8": {
+              "description": "Ground",
+              "name": "GND",
+              "type": "female"
+            },
+            "9": {
+              "description": "GPIO / AIN",
+              "name": "GPIO/AIN_10",
+              "portPin": "A0",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "10": {
+              "description": "GPIO / AIN",
+              "name": "GPIO/AIN_11",
+              "portPin": "A1",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "11": {
+              "description": "A2",
+              "name": "A2",
+              "portPin": "A2",
+              "type": "female"
+            },
+            "12": {
+              "description": "GPIO / AIN",
+              "name": "GPIO/AIN_13",
+              "portPin": "A3",
+              "keywords": [ "gpio" ],
+              "type": "female"
+            },
+            "13": {
+              "description": "A4",
+              "name": "A4",
+              "portPin": "A4",
+              "type": "female"
+            },
+            "14": {
+              "description": "I2C SCL / UART1 RTS / AIN",
+              "name": "I2Co_SS_SCL/UATT1_RTS/AN09",
+              "portPin": "A5",
+              "keywords": [ "i2c", "uart" ],
+              "type": "female"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,374 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="bower_components/iron-accordions/iron-accordions.html">
+
+<link rel="import" href="external/markdown-it/markdown-it.html">
+
+<dom-module id='board-index'>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      markdown-it {
+        display: block;
+      }
+
+      iron-accordion[opened] {
+      }
+
+      iron-accordion[opened] [header] {
+        background-color: var(--bg-md);
+      }
+
+      iron-accordion:not(:last-of-type) {
+        border-bottom: 1px solid #ddd;
+      }
+
+      iron-accordion a {
+        display: block;
+        padding: 0.5rem;
+        cursor: pointer;
+      }
+
+      iron-accordion [header]:hover,
+      iron-accordion a:hover,
+      iron-accordion a.active {
+        border-color: #97ca41;
+        background-color: #d6eab0;
+        color: #52595a;
+      }
+
+      iron-accordion a:not(:last-of-type) {
+        border-bottom: 1px solid #ddd;
+      }
+
+      iron-accordion a {
+        text-decoration: none;
+        color: black;
+      }
+
+      iron-accordion a span:first-of-type {
+        min-width: 3rem;
+        padding-right: 0.5rem;
+      }
+
+      #collateral ::content h3:first-child,
+      #collateral ::content h2:first-child,
+      #collateral ::content h1:first-child,
+      #intro ::content h3:first-child,
+      #intro ::content h2:first-child,
+      #intro ::content h1:first-child {
+        margin-top: 0;
+      }
+
+      #links {
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+      }
+
+      #links [header] {
+        font-size: 14px;
+        padding: 0.7rem 0;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #links [header].active {
+        border-color: #97ca41;
+        background-color: #d6eab0;
+        color: #52595a;
+      }
+
+      #links [header]::before,
+      #links [header]::after {
+        display: none;
+      }
+
+      paper-material {
+        padding: 0.5rem;
+      }
+
+      :host > h2 {
+        margin: 0.5rem 0;
+      }
+    </style>
+
+    <app-route
+      route="{{route}}"
+      pattern="/:pin"
+      data="{{pinData}}"
+      active="{{pinActive}}"></app-route>
+
+    <markdown-it id="intro" no-error edit="{{edit}}">
+    </markdown-it>
+    <h2>Components</h2>
+    <iron-accordions id="links" attr-for-selected="id">
+      <template id="links-repeat" is="dom-repeat" items="[[components]]">
+        <iron-accordion id="[[item.key]]"
+            on-tap="componentTap"
+            on-mouseover="componentHover"
+            on-mouseout="componentOut">
+          <h4 id="[[item.key]]"
+            header>[[item.name]] <span hidden$="[[!item.pins]]" class="fa fa-chevron-down"></span></h4>
+          <template id="items-repeat" is="dom-if" if="[[item.pins]]">
+            <template is="dom-repeat" items="[[item.pins]]" as="pin">
+              <a id="[[pin.key]]"
+                on-tap="pinTap"
+                on-mouseover="pinHover"
+                on-mouseout="pinOut"
+                href$="[[board]]/[[pin.key]]">
+                <span>Pin #[[pin.id]]</span>
+                <span>[[pin.description]]</span>
+              </a>
+            </template>
+          </template>
+        </iron-accordion>
+      </template>
+    </iron-accordions>
+
+    <!--markdown-it id="collateral" edit="{{edit}}">
+    </markdown-it-->
+  </template>
+
+  <script>
+  Polymer({
+    is: 'board-index',
+
+    behaviors: [Polymer.IronResizableBehavior],
+
+    properties: {
+      board: {
+        type: String
+      },
+      boardData: {
+        type: Array,
+        observer: 'onBoardDataChanged'
+      },
+      components: {
+        type: Array,
+      },
+      pin: {
+        type: String,
+        notify: true,
+        observer: 'onPinChanged'
+      },
+      component: {
+        type: String
+      }
+    },
+
+    observers: [
+      'onBoardChanged(board)',
+      'onPinRouteChanged(pinActive, pinData, components)',
+    ],
+
+    onHeaderSelected: function(event, open) {
+      console.log('onHeaderSelected');
+      if (!open && event.currentTarget.hasAttribute('opened')) {
+        console.log('Closing');
+        event.currentTarget.removeAttribute('opened');
+        return;
+      }
+
+      Array.prototype.forEach.call(
+        this.$.links.querySelectorAll('[opened]'),
+        function(el) {
+        el.removeAttribute('opened');
+      });
+
+      console.log('Opening');
+      event.currentTarget.setAttribute('opened', true);
+    },
+
+    onPinRouteChanged: function(pinActive, pinData, components) {
+      /* components is on the list to ensure this doesn't run until after
+       * the board.json is loaded */
+
+      /* Force a render on the nested dom-repeats for the menu */
+      Polymer.dom(this.root).querySelector('#links-repeat').render();
+
+      var el = null, menu = null, item = (pinData && pinData.pin) ? pinData.pin : '';
+
+      this.component = item ? item.split("Pin")[0] : '';
+
+      if (this.component) {
+        this.$.links.selected = this.component;
+        menu = this.$.links.querySelector('iron-accordion#' + this.component);
+      }
+
+      var tmp = menu ? Polymer.dom(menu).querySelector('#items-repeat') : null;
+      if (tmp) {
+        tmp.render();
+      }
+
+      /* If the current selected component is changing, look for the specific
+       * pin item in the component and ensure it is scrolled into view. */
+      if (item && this.component != item) {
+        el = Polymer.dom(menu).querySelector('a#' + item);
+      }
+      if (el) {
+        var top = el.offsetTop;
+        /* This is an ugly hack to perform the scroll after the DOM is
+         * fully populated. Neither dom-repeat.render() nor Polymer.dom.flush()
+         * improved this race condition. */
+        this.async(function() {
+
+          if (this.scrollTop + this.clientHeight < top
+          || this.scrollTop > top) {
+            this.scrollTop = top - this.clientHeight * 0.5;
+          }
+        }, 500);
+      }
+
+      console.log('Calling from pinRouteChanged');
+
+      if (menu && !menu.hasAttribute('opened')) {
+        this.onHeaderSelected({currentTarget: menu}, true);
+      }
+
+      this.onPinChanged(item);
+    },
+
+    onPinChanged: function(item) {
+      var component = item ? item.split("Pin")[0] : '';
+        headers = Polymer.dom(this.root).querySelectorAll('#links [header]');
+
+      /* Remove 'active' from all menu index items (except the new one,
+       * if it is already set) */
+      Array.prototype.forEach.call(
+        Polymer.dom(this.$.links).querySelectorAll('.active'), function (header) {
+        header.classList.toggle('active', header.id == component);
+      })
+
+      /* No item is actively selected, so return now */
+      if (!component) {
+        return;
+      }
+
+      /* Set the active class on the current menu component */
+      var el = Polymer.dom(this.$.links).querySelector(
+        '#links #' + component + '[header]');
+
+      if (el) {
+        el.classList.add('active');
+      }
+
+      /* If this is a pin item, then find the pin under the component
+       * and set it active as well */
+      if (component != item) {
+        el = Polymer.dom(this.$.links).querySelector(
+          'a#' + item);
+        if (el) {
+          el.classList.add('active');
+        }
+      }
+    },
+
+    componentTap: function(event) {
+      var pin = event.model.item.key;
+      console.log('componentTap: ' + pin);
+      this.set('route.path', '/' + pin);
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    },
+
+    componentHover: function(event) {
+      var pin = event.model.item.key;
+      console.log('Hovering over component: ' + pin);
+      this.set('pin', pin);
+    },
+
+    componentOut: function(event) {
+      var pin = event.model.item.key;
+      if (this.pinData.pin == pin) {
+        this.set('pin', null);
+      }
+    },
+
+    pinHover: function(event) {
+      var pin = event.model.dataHost.itemForElement(event.target).key;
+      console.log('Hovering over pin: ' + pin);
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      this.set('pin', pin);
+    },
+
+    pinTap: function(event) {
+      var pin = event.model.dataHost.itemForElement(event.target).key;
+      console.log('Setting pin: ' + pin);
+      this.set('route.path', '/' + pin);
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    },
+
+    pinOut: function(event) {
+      var pin = event.model.dataHost.itemForElement(event.target).key;
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      if (this.pin == pin) {
+        this.set('pin', null);
+      }
+    },
+
+    onBoardChanged: function(board) {
+      var self = this;
+
+      self.$.intro.src = "boards/" + board + "/index.md";
+    },
+
+    onBoardDataChanged: function(boardData) {
+      console.log('Board data set');
+      var data = [], component;
+      for (var key in boardData) {
+        var item = boardData[key];
+        if (typeof item != 'object') {
+          continue;
+        }
+
+        if (!item.description) {
+          console.log('Component ' + key + ' is missing description.');
+        }
+
+        if (!item.description && !item.pins) {
+          continue;
+        }
+
+        var name = item.name || item.id;
+        /* If the name is different than index key,
+         * postfix the name with the key id */
+        if (name != key) {
+          name = name + ' (' + key + ')';
+        }
+
+        component = {
+          key: key,
+          name: name,
+          description: item.description
+        };
+
+        if (item.pins) {
+          component.pins = [];
+          for (var index in item.pins) {
+            component.pins.push({
+              id: index,
+              key: key + 'Pin' + index,
+              description: item.pins[index].description
+            });
+          }
+        }
+
+        data.push(component);
+      }
+
+      this.set('components', data);
+    },
+
+    ready: function() {
+    }
+  });
+  </script>
+</dom-module>

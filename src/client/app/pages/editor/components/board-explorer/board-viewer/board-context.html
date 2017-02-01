@@ -1,0 +1,208 @@
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="external/markdown-it/markdown-it.html">
+
+<dom-module id='board-context'>
+  <template>
+    <style>
+      :host {
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      #contentContainer {
+        padding: 1rem;
+      }
+
+      paper-material {
+        margin: 1rem;
+        padding: 1rem;
+      }
+    </style>
+
+    <app-route route="{{route}}" pattern="/:pin" data="{{pinData}}" active="{{pinActive}}"></app-route>
+
+    <paper-material id="contentContainer" elevation="0">
+      <markdown-it id="content" no-error edit="[[edit]]" on-loaded-changed='_triggerResize'>
+      </markdown-it>
+      <paper-material hidden$="[[_isEmpty(topics)]]" elevation=0>
+        <h1>About</h1>
+        <template is="dom-repeat" items="[[topics]]">
+          <markdown-it start-level=3 no-error edit="[[edit]]" src="[[item]]" on-loaded-changed='_triggerResize'>
+          </markdown-it>
+        </template>
+      </paper-material>
+      <paper-material hidden$="[[_isEmpty(notes)]]" elevation=0>
+        <h1>Technical notes</h1>
+        <template is="dom-repeat" items="[[notes]]">
+            <markdown-it start-level=3 no-error edit="[[edit]]" src="[[item]]" on-loaded-changed='_triggerResize'>
+            </markdown-it>
+        </template>
+      </paper-material>
+      <template is="dom-if" if="[[attribution]]">
+        <markdown-it no-error edit="[[edit]]" src="[[attribution]]" on-loaded-changed='_triggerResize'>
+        </markdown-it>
+      </template>
+    </paper-material>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: "board-context",
+
+      properties: {
+        board: {
+          type: String
+        },
+        component: {
+          type: String,
+          reflectToAttribute: true,
+          notify: true
+        },
+        name: {
+          type: String,
+          reflectToAttribute: true,
+          notify: true
+        },
+        pin: {
+          type: String
+        },
+        boardData: {
+          type: Object
+        },
+
+        /* topics
+         * Array of topic URLs to load via markdown into the pin target
+         * context tray */
+        topics: {
+          type: Array,
+          value: []
+        }
+      },
+
+      observers: [
+        'onBoardChanged(board)',
+        'onPinChanged(boardData, pin)'
+      ],
+
+      _triggerResize: function() {
+        this.debounce('updateTray', function() {
+          this.fire('resize');
+        }, 100);
+      },
+
+      _isEmpty: function(value) {
+        return !Array.isArray(value) || value.length == 0;
+      },
+
+      _getItemTopics: function(type, item) {
+        var words = [], details,
+          self = this;
+
+        details = self.boardData[item.component];
+
+        if (details.attribution) {
+          item.attribution = true;
+        }
+
+        /* Build set of topics from the component */
+        if (type in details && Array.isArray(details[type])) {
+          details[type].forEach(function(word) {
+            words.push(word.toLowerCase());
+          });
+        }
+
+        /* If the item is a pin, also build the set of topics from the
+         * pin itself */
+        if (item.type == 'pin') {
+          details = self.boardData[item.component].pins[item.number];
+          if (type in details && Array.isArray(details[type])) {
+            details[type].forEach(function(word) {
+              words.push(word.toLowerCase());
+            });
+          }
+        }
+
+        words.sort();
+
+        var topics = [], last = '', path;
+
+        if (type == 'keywords') {
+          path = 'global-docs/';
+        } else {
+          path = 'boards/' + self.board + '/docs/';
+        }
+
+        words.forEach(function(topic) {
+          /* Skip duplicates... */
+          if (last == topic) {
+            return;
+          }
+          last = topic;
+
+          topics.push(path + topic.toLowerCase() + '.md')
+        });
+
+        return topics;
+      },
+
+      onPinChanged: function(boardData, pin) {
+        var self = this,
+          item = {};
+        if (!pin) {
+          return;
+        }
+        item.component = pin.split("Pin")[0];
+        item.type = (item.component == pin) ? 'component' : 'pin';
+        if (item.type == 'pin') {
+          var number = pin.match(/\d+$/);
+          if (number) {
+            item.number = number[0];
+            self.component = boardData[item.component].id;
+            self.name = 'Pin #'
+              + item.number
+              + ' '
+              + boardData[item.component].pins[item.number].description;
+          }
+        } else {
+          self.component = boardData[item.component].id;
+          self.name = item.component;
+        }
+
+        /* Load the board content into the content element, resetting
+         * scroll position to the top */
+        self.$.content.scrollTop = 0;
+        self.$.content.src = 'boards/' +
+          self.board + '/docs/' + pin + '.md';
+
+        /* Extract the list of keywords from the board data and then
+         * load markdown-it items (via dom-repeat bound to topics)
+         * for all of the keywords */
+        self.topics = self._getItemTopics('keywords', item);
+        self.notes = self._getItemTopics('notes', item);
+
+        /* If the attribution flag is set, provide the attribution
+         * footnote */
+        if (item.attribution) {
+          self.attribution = 'boards/' + self.board + '/docs/attribution.md';
+        } else {
+          self.set('attribution', null);
+        }
+      },
+
+      onBoardChanged: function(board) {
+        var self = this;
+        if (!board) {
+          return;
+        }
+      }
+    });
+  </script>
+</dom-module>
