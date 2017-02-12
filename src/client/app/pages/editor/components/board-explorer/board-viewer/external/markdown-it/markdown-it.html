@@ -1,0 +1,298 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<script src="../../bower_components/markdown-it-emoji/dist/markdown-it-emoji.min.js"></script>
+<script src="../../bower_components/markdown-it-sup/dist/markdown-it-sup.min.js"></script>
+<script src="../../bower_components/markdown-it-sub/dist/markdown-it-sub.min.js"></script>
+<script src="../../bower_components/markdown-it-ins/dist/markdown-it-ins.min.js"></script>
+<script src="../../bower_components/markdown-it-mark/dist/markdown-it-mark.min.js"></script>
+<script src="../../bower_components/markdown-it-footnote/dist/markdown-it-footnote.js"></script>
+<script src="../../bower_components/markdown-it-abbr/dist/markdown-it-abbr.js"></script>
+<script src="../../bower_components/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
+<script src="../../bower_components/markdown-it-classy/dist/markdown-it-classy.js"></script>
+<script src="../../bower_components/markdown-it/dist/markdown-it.js"></script>
+<script src="../../bower_components/highlightjs/highlight.pack.min.js"></script>
+
+<link rel="import" href="markdownit-css.html">
+<link rel="import" href="markdownit-plugins-css.html">
+<link rel="stylesheet" href="../../bower_components/highlightjs/styles/atom-one-light.css">
+
+<dom-module id='markdown-it'>
+  <template>
+    <style include="markdownit-css"></style>
+    <style include="markdownit-plugins-css"></style>
+    <style>
+      h1, h2, h3, h4, h5, h6 {
+        text-transform: none;
+        font-weight: 700;
+      }
+
+      h3 {
+        font-weight: 500;
+      }
+
+      ul, ol {
+        list-style: initial;
+        padding-left: 1rem;
+      }
+
+      ol {
+        list-style-type: decimal;
+      }
+
+      #light {
+        padding: var(--markdown-it-padding, 0);
+        @apply(--markdown-it);
+      }
+
+      #edit {
+        border-top: 1px solid #ddd;
+        padding: 0.5rem 0;
+      }
+
+      p {
+        font-size: var(--font-size, 100%);
+      }
+    </style>
+    <div id="light"></div>
+    <template is="dom-if" if="{{edit}}">
+      <div id="edit">
+        <template is="dom-if" if={{notFound}}>
+          The following link will take you to a 404 because this page does not
+          yet exist.<br><br>
+        </template>
+        internal mode: <a href="{{edit}}{{computeBase(src)}}">edit page</a>
+      </div>
+    </template>
+  </template>
+
+  <script>
+    "use strict";
+
+    Polymer({
+      is: "markdown-it",
+      properties: {
+        startLevel: {
+          type: Number,
+          value: 1
+        },
+        mode: {
+          type: String,
+          value: "html"
+        },
+        markdown: {
+          type: String,
+          value: "",
+          observer: 'onMarkdownChanged'
+        },
+        html: {
+          type: String,
+          value: "",
+          readOnly: true
+        },
+        src: {
+          type: String,
+          observer: 'onSrcChanged'
+        },
+        loaded: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          readOnly: true
+        },
+        notFound: {
+          type: Boolean,
+          value: false
+        },
+        headings: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+        /* Whether or not to show 'Unable to load...' as content if there
+         * is a 404 */
+        noError: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      computeBase: function(src) {
+        var base = document.querySelector('base');
+        if (!base) {
+          return src;
+        }
+
+        return src.replace(base.href, '');
+      },
+
+      onSrcChanged: function(value) {
+        var self = this;
+        this._setLoaded(false);
+        if (value == '') {
+          this.markdown = '';
+          return;
+        }
+
+        console.log("Fetching " + value);
+        fetch(value, function(headers, response) {
+          var re = '';
+          if (/\.md$/.exec(self.src) && /^<html>/.exec(response)) {
+            console.log("ERROR: " + self.src + " returned HTML! Does it exist?");
+            self.markdown = '';
+            return;
+          }
+          if (response instanceof Error) {
+            self.notFound = true;
+            if (!self.noError) {
+              self.markdown = 'Unable to load **' + self.src + '**';
+            }
+          } else {
+            self.markdown = response;
+          }
+        });
+      },
+
+      onMarkdownChanged: function(value) {
+        var self = this;
+
+        self._setHtml(this.md.render(value));
+        var el = self.$.light;
+
+        switch (self.mode) {
+        case 'html':
+          if (typeof value === 'string') {
+            Polymer.dom(self.$.light).innerHTML = self.html;
+          }
+          break;
+
+        case 'markdown':
+          if (typeof value === 'string') {
+            Polymer.dom(self.$.light).innerHTML = value;
+          }
+          break;
+
+        case 'none':
+          Polymer.dom(self.$.light).innerHTML = '';
+          break;
+        }
+
+        Polymer.dom.flush();
+
+        if (self.headings && self.headings.length) {
+          self.splice('headings', 0, self.headings.length);
+        } else {
+          self.set('headings', []);
+        }
+
+        if (self.mode == 'none') {
+          el = document.createElement('div');
+          el.innerHTML = value;
+          el.display = 'none';
+          document.body.appendChild(el);
+        }
+
+        Array.prototype.forEach.call(Polymer.dom(el).querySelectorAll('h3'),
+          function(heading) {
+            var slug = self.slugify(heading.textContent);
+            heading.setAttribute('slug', slug);
+            self.push('headings', {
+              text: heading.textContent,
+              slug: slug
+            });
+          });
+
+        Array.prototype.forEach.call(Polymer.dom(el).querySelectorAll('a'),
+          function(anchor) {
+            var url = anchor.href.split("#");
+            var path = document.querySelector('base').href;
+            if(url[1] && url[0] == path) {
+              path += document.querySelector('app-route').data.tab ? document.querySelector('app-route').data.tab : "";
+              path += document.querySelector('app-route').tail.path ? document.querySelector('app-route').tail.path : "";
+              path += '#' + url[1];
+              anchor.setAttribute('href', path);
+            }
+            anchor.setAttribute('title', anchor.text);
+            anchor.setAttribute('target', self.getTarget(anchor.href));
+          });
+
+        /* Build header list */
+        if (self.mode == 'none') {
+          el.parentElement.removeChild(el);
+        }
+
+        self._setLoaded(true);
+      },
+
+      slugify: function(text) {
+        /* Adapted from https://gist.github.com/mathewbyrne/1280286 */
+        return encodeURIComponent(text    // Encode the final result as an URI
+          .toString()                     // Ensure it is a string
+          .toLowerCase()                  // remove CamelCase
+          .replace(/\s+/g, '-')           // Replace spaces with -
+          .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+          .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+          .replace(/^-+/, '')             // Trim - from start of text
+          .replace(/-+$/, ''));           // Trim - from end of text);
+      },
+
+      getTarget: function(href) {
+        var hrefRegExp = new RegExp('^(http|https)://' + window.location.hostname + '.*')
+        return hrefRegExp.test(href) ? "_self" : "_blank";
+      },
+
+      created: function() {
+        this.md = window.markdownit({
+          html: false,
+          xhtmlOut: false,
+          breaks: false,
+          langPrefix: 'language-',
+          linkify: false, /* Turn off linkify - fix-144 */
+          typographer: true,
+          highlight: function(str, lang) {
+            var classConsole = (lang == 'console') ? 'console' : '';
+            lang = (lang == 'console') ? 'bash' : lang;
+            if (lang && hljs.getLanguage(lang)) {
+              try {
+                return '<pre class="language-' + lang + ' ' + classConsole + '"><code class="language-'+ lang + ' ' + classConsole + '">' + hljs.highlight(lang, str).value + '</code></pre>';
+              } catch (__) {}
+            }
+            return ''; // use external default escaping
+          }
+        });
+
+        var old_open = this.md.renderer.rules.heading_open || function(tokens, idx, options, env, self) {
+          return self.renderToken(tokens, idx, options);
+        };
+
+        this.md.renderer.rules.heading_open = function(tokens, idx, options, env, self) {
+          if (this.startLevel != 1) {
+            var heading = /^h([0-9]*)$/.exec(tokens[idx].tag);
+            if (heading) {
+              console.log(heading);
+              tokens[idx].tag = 'h'
+                + (parseInt(heading[1]) + parseInt(this.startLevel) - 1);
+            }
+          }
+          return old_open(tokens, idx, options, env, self);
+        }.bind(this);
+
+        // Plugins load.
+        window.markdownitEmoji(this.md);
+        window.markdownitSup(this.md);
+        window.markdownitSub(this.md);
+        window.markdownitIns(this.md);
+        window.markdownitMark(this.md);
+        window.markdownitFootnote(this.md);
+        window.markdownitDeflist(this.md);
+        window.markdownitAbbr(this.md);
+        window.markdownItClassy(this.md);
+      },
+
+      attached: function() {
+        if (Polymer.dom(this).textContent.trim() != '') {
+          this.markdown = Polymer.dom(this).textContent;
+        }
+      }
+    });
+  </script>
+</dom-module>

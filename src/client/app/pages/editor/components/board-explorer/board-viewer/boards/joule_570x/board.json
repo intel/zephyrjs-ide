@@ -1,0 +1,10 @@
+{
+  "title": "The Intel® IoT Developer Kit for the Intel® Joule™ module",
+  "views": {
+    "front": {
+      "image": "front.svg",
+      "components": {
+      }
+    }
+  }
+}

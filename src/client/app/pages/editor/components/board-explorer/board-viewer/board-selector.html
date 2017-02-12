@@ -1,0 +1,193 @@
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="external/markdown-it/markdown-it.html">
+
+<dom-module id="board-selector">
+  <script src="external/fetch.js"></script>
+  <template>
+    <style is="custom-style" include="iron-flex iron-flex-alignment">
+      :host {
+        position: relative;
+        display: inline-block;
+        @apply(--board-selector-theme);
+      }
+
+      paper-button {
+        text-transform: inherit;
+      }
+
+      /* If not "tiny" or "tablet", assume desktop for all default styles */
+
+      /* NOTE: For this to not horribly squash image aspect ratios, we have
+       * the item width hard coded to fixed pixels. We could use various
+       * image-fill css attributes, but then we might letterbox the wrong
+       * part of the image... */
+      .item {
+        display: inline-block;
+        width: 320px;
+        cursor: pointer;
+        border: 3px solid rgba(255, 255, 255, 0);
+        padding: 1rem;
+        margin: 0.25rem;
+      }
+
+      .item > * {
+        pointer-events: none;
+      }
+
+      .item:not(.filler) {
+        @apply(--board-selector-item-theme);
+      }
+
+      .item:hover:not(.filler) {
+        background-color: #d0e8f8;
+      }
+
+      /* fill up the space of the last row */
+      .filler {
+        width: 320px;
+        height: 1px;
+        max-height: 1px;
+        pointer-events: none;
+        margin: 0.25rem;
+      }
+
+      .filler.tiny,
+      .item.tiny {
+        width: 100%;
+      }
+
+      .item .image {
+        position: relative;
+        width: 100%;
+      }
+
+      .item .image > div {
+        width: 100%;
+        height: calc(240px - 2rem);
+        background-size: contain;
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+      }
+    </style>
+    <iron-media-query query="max-width: 480px" query-matches="{{tinyLayout}}">
+    </iron-media-query>
+
+    <iron-media-query query="max-width: 600px" query-matches="{{tabletLayout}}">
+    </iron-media-query>
+
+    <div class="container horizontal around-justified layout wrap">
+      <template is="dom-repeat" items="[[boards]]">
+        <paper-button raised noink class$="item [[gridClass]]" tabindex=[[index]] on-tap="onBoardSelected">
+          <div class="image">
+            <div style$="background-image: url('boards/[[item.board]]/[[item.image]]');">
+            </div>
+            <h3 class="title">[[item.title]]</h3>
+          </div>
+          <!-- Hide the details if the in a tiny window -->
+          <template is="dom-if" if="[[!tinyLayout]]">
+            <div class="details">
+              <markdown-it edit=[[edit]] no-error src$="boards/[[item.board]]/summary.md"></markdown-it>
+            </div>
+          </template>
+        </paper-button>
+      </template>
+      <!-- horrible hack to left justify the last column; this could
+           be replaced with a dom-repeat with the count of filler-items set
+           based on the width of the page -->
+      <template is="dom-repeat" items="[ 1, 2, 3, 4, 5, 6 ]">
+        <div class$="filler [[gridClass]]"></div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    "use strict";
+    Polymer({
+      is: "board-selector",
+      properties: {
+        boards: {
+          type: Array,
+        },
+
+        tinyLayout: {
+          type: Boolean
+        },
+
+        tabletLayout: {
+          type: Boolean
+        },
+
+        desktopLayout: {
+          type: Boolean,
+          computed: "isDesktopLayout(tinyLayout, tabletLayout)"
+        },
+
+        gridClass: {
+          type: String,
+          computed: "computeGridClass(tinyLayout, tabletLayout)"
+        },
+
+        board: {
+          type: String,
+          reflectToAttribute: true,
+          notify: true
+        },
+
+        title: {
+          type: String,
+          reflectToAttribute: true,
+          notify: true
+        }
+      },
+
+      observers: [
+        'setTitle(boards, board)'
+      ],
+
+      setTitle: function(boards, board) {
+        for (var i = 0; i < boards.length; i++) {
+          if (boards[i].board == board) {
+            this.title = boards[i].title;
+          }
+        }
+      },
+
+      onBoardSelected: function(event) {
+        this.board = event.model.item.board;
+        this.title = event.model.item.title;
+      },
+
+      isDesktopLayout: function(tinyLayout, tabletLayout) {
+        return !tinyLayout && !tabletLayout;
+      },
+
+      computeGridClass: function(tinyLayout, tabletLayout) {
+        console.log('Computing class: ', tinyLayout, tabletLayout);
+        return tinyLayout ? "tiny" : tabletLayout ? "tablet" : "";
+      },
+
+      ready: function() {
+        var self = this;
+
+        fetch("boards.json", function(headers, response) {
+          if (response instanceof Error) {
+            console.log('Error: ' + response.message);
+            return;
+          }
+
+          try {
+            self.set('boards', JSON.parse(response));
+          } catch (___) {
+            console.log(___);
+          }
+        });
+      }
+    });
+  </script>
+</dom-module>

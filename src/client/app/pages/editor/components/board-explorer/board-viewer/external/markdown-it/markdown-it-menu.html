@@ -1,0 +1,116 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
+
+<link rel="import" href="../../bower_components/iron-accordions/iron-accordions.html">
+<link rel="import" href="../../elements/markdown-it/markdown-it.html">
+
+<dom-module id="markdown-it-menu">
+  <template>
+    <style>
+      #markdown {
+        display: none;
+      }
+    </style>
+    <iron-accordions selected="{{selected}}">
+      <template is="dom-repeat" items="{{headings}}">
+        <iron-accordion>
+          <h4 header>{{item.title}}</h4>
+          <template is="dom-if" if="{{showHeadingContent}}">
+            <markdown-it>{{item.markdown}}</markdown-it>
+          </template>
+        </iron-accordion>
+      </template>
+    </iron-accordions>
+    <markdown-it id="markdown" mode="none"
+      on-loaded-changed="contentLoaded"
+      on-headings-changed="onHeadingsChanged"
+      src={{src}}></markdown-it>
+    <template is="dom-if" if={{edit}}>
+      <hr>
+      <template is="dom-if" if={{notFound}}>
+        The following link will take you to a 404 because this page does not
+        yet exist.<br><br>
+      </template>
+      <a href="{{edit}}{{computeBase(src)}}">edit page</a>
+    </template>
+  </template>
+
+  <script>
+    "use strict";
+
+    Polymer({
+      is: "markdown-it-menu",
+
+      properties: {
+        showHeadingContent: {
+            type: Boolean,
+            value: false
+        },
+        regExpForHeading: {
+          type: String,
+          value: "^#([^#].*)$",
+          observer: "contentLoaded"
+        },
+        headings: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+        notFound: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      computeBase: function(src) {
+        return src.replace(document.querySelector('base').href, '');
+      },
+
+      onHeadingsChanged: function() {
+
+      },
+
+      contentLoaded: function() {
+        var self = this;
+        if (self.$.markdown.notFound) {
+          this.notFound = true;
+          return;
+        }
+
+        if (!self.$.markdown.loaded || self.$.markdown.html == '') {
+          if (self.headings) {
+            self.splice('headings', 0, self.headings.length);
+          }
+          return;
+        }
+
+        /* markdown-it is finished processing; extract headers and body
+           chunks into 'headings' property */
+        var lines = self.$.markdown.markdown.split("\n"),
+          re = new RegExp(this.regExpForHeading),
+          item = null, match;
+        lines.forEach(function (line) {
+          match = re.exec(line);
+          if (match) {
+            if (item) {
+              self.push('headings', item);
+            }
+            item = {
+              title: match[1],
+              markdown: ""
+            };
+            return;
+          }
+
+          /* This will eat any lines before the first heading block */
+          if (item) {
+            item.markdown += line + "\n";
+          }
+        });
+        if (item) {
+          self.push('headings', item);
+        }
+      }
+    });
+  </script>
+</dom-module>
