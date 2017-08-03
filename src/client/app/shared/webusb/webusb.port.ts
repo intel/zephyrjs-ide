@@ -200,6 +200,11 @@ export class WebUsbPort {
         });
     }
 
+
+public sleep (time: number) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
     public run(data: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             if (data.length === 0) {
@@ -213,9 +218,19 @@ export class WebUsbPort {
                 .then(() => {
                     let ihex =
                         this.convIHex(data);
-
+                    var count = 0;
                     for (let line of ihex.split('\n')) {
-                        this.send(line + '\n');
+                        // Every 20 lines sleep for a moment to let ashell
+                        // catch up.  This prevents overflowing the UART
+                        if (count < 20) {
+                            this.send(line + '\n');
+                        } else {
+                            this.sleep(700).then(() => {
+                            this.send(line + '\n');
+                            count = 0;
+                            });
+                        }
+                        count ++;
                     }
                 })
                 .then(() => this.send('run temp.dat\n'))
