@@ -14,6 +14,7 @@ import { WebUsbService } from '../../../../shared/webusb/webusb.service';
 import { WebUsbPort } from '../../../../shared/webusb/webusb.port';
 import { EditorTab, OPERATION_STATUS } from '../../editor.tab';
 
+import { AppHints } from '../../../../app.hints';
 
 declare const monaco: any;
 
@@ -49,6 +50,7 @@ export class MonacoComponent implements AfterViewInit {
             (<any>window).require.config({ paths: { 'vs': 'libs/monaco/vs' } });
             (<any>window).require(['vs/editor/editor.main'], () => {
                 this.initMonaco();
+                this.initAppHints();
             });
         };
 
@@ -137,5 +139,23 @@ export class MonacoComponent implements AfterViewInit {
         if (model !== null) {
             this.tab.editor.setModel(model);
         }
+    }
+
+    // This will overwrite the existing type hints used in the Web-IDE and
+    // replace it with Zephyr.js API hints
+    public initAppHints() {
+        // Turn off default hints since they are not applicable
+        monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+            target: monaco.languages.typescript.ScriptTarget.ES5,
+            noLib: true,
+            noEmit: true,
+            allowNonTsExtensions: true
+        });
+
+        // Register the ZJS API hints.
+        monaco.languages.typescript.javascriptDefaults.addExtraLib(
+            AppHints,
+            ''
+        );
     }
 }
