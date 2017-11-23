@@ -1,7 +1,7 @@
-[![Linux/OSX Build Status](https://travis-ci.org/01org/zephyrjs-ide.svg?branch=master)](https://travis-ci.org/01org/zephyrjs-ide)
+[![Linux/OSX Build Status](https://travis-ci.org/intel/zephyrjs-ide.svg?branch=master)](https://travis-ci.org/intel/zephyrjs-ide)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/n0mg3nc5lhsb8s46/branch/master?svg=true)](https://ci.appveyor.com/project/siovene/zephyrjs-ide/branch/master)
-[![Dependency Status](https://david-dm.org/01org/zephyrjs-ide.svg)](https://david-dm.org/01org/zephyrjs-ide)
-[![devDependency Status](https://david-dm.org/01org/zephyrjs-ide/dev-status.svg)](https://david-dm.org/01org/zephyrjs-ide#info=devDependencies)
+[![Dependency Status](https://david-dm.org/intel/zephyrjs-ide.svg)](https://david-dm.org/intel/zephyrjs-ide)
+[![devDependency Status](https://david-dm.org/intel/zephyrjs-ide/dev-status.svg)](https://david-dm.org/intel/zephyrjs-ide#info=devDependencies)
 
 # Table of Contents
 
@@ -43,7 +43,7 @@ In order to start the project, do the following:
 
 
 ```bash
-$ git clone https://github.com/01org/zephyrjs-ide.git
+$ git clone https://github.com/intel/zephyrjs-ide.git
 $ cd zephyrjs-ide
 
 # install the project's dependencies
@@ -244,7 +244,7 @@ You can learn more about [Protractor Interactive Mode here](https://github.com/a
 # Contributing
 
 Please see the
-[CONTRIBUTING](https://github.com/01org/zephyrjs-ide/blob/master/.github/CONTRIBUTING.md)
+[CONTRIBUTING](https://github.com/intel/zephyrjs-ide/blob/master/.github/CONTRIBUTING.md)
 file for guidelines.
 
 # License

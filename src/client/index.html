@@ -9,9 +9,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="<%= APP_BASE %>assets/favicon/favicon-<%= ENV_CONFIG.ENV %>.ico" type="image/x-icon">
 
-  <!-- Origin Trial Token, feature = WebUSB (For Chrome M57+), origin = https://01org.github.io, expires = 2017-09-05 -->
-  <meta http-equiv="origin-trial" data-feature="WebUSB (For Chrome M57+)" data-expires="2017-09-05" content="As8y4LG/sAALCqUjzVvTYkwhhnCfeVCCcI28e4j6WoqPuc0/45BJzx4oUkqzzj/8tcWzFW+Hp6yrIyiivY7y8QkAAABQeyJvcmlnaW4iOiJodHRwczovLzAxb3JnLmdpdGh1Yi5pbzo0NDMiLCJmZWF0dXJlIjoiV2ViVVNCMiIsImV4cGlyeSI6MTUwNDU2OTYwMH0=">
-
   <!-- inject:css -->
   <!-- endinject -->
 
@@ -98,7 +95,7 @@
   System.import('<%= BOOTSTRAP_MODULE %>')
     .catch(function (e) {
       console.error(e.stack || e,
-        'Not expecting this error? Report it at https://github.com/01org/zephyrjs-ide/issues');
+        'Not expecting this error? Report it at https://github.com/intel/zephyrjs-ide/issues');
     });
   </script>
   <% } %>
