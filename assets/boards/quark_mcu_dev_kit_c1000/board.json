@@ -1,5 +1,5 @@
 {
-  "title": "Intel Quark Microcontroller Developmer Kit C1000",
+  "title": "Intel Quark Microcontroller Developer Kit C1000",
   "categories": [ {
     "name": "Power supply inputs and main power switch provision",
     "list": [ "J2", "J1", "J4", "J20", "J21" ]
