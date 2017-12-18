@@ -1,6 +1,6 @@
 {
   "name": "zephyrjs-ide",
-  "version": "0.21.0-alpha",
+  "version": "0.22.0-alpha",
   "description": "Online JavaScript editor with WebUSB Zephyr.js integration",
   "repository": {
     "url": "https://github.com/intel/zephyrjs-ide"
@@ -48,6 +48,10 @@
   },
   "author": "Salvatore Iovene <salvatore.iovene@intel.com>",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.5.0",
+     "npm": ">=3.10.3"
+  },
   "devDependencies": {
     "@angular/compiler-cli": "^5.1.0",
     "@angular/platform-server": "^5.1.0",
