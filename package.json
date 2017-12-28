@@ -50,7 +50,7 @@
   "license": "Apache-2.0",
   "engines": {
     "node": ">=6.5.0",
-     "npm": ">=3.10.3"
+    "npm": ">=3.10.3"
   },
   "devDependencies": {
     "@angular/compiler-cli": "^5.1.0",
