@@ -137,7 +137,7 @@ export class WebUsbService {
         let webusbThis = this;
         let loadStr = '';
         webusbThis.record = true;
-        return( new Promise<string> ((resolve, reject) =>{
+        return( new Promise<string> ((resolve, reject) => {
             webusbThis.sendWithCB('cat ' + data + '\n', function () {
                 // Remove the command line from the array
                 webusbThis.incomingData.splice(0, 2);
@@ -168,7 +168,7 @@ export class WebUsbService {
             let webusbThis = this;
             webusbThis.record = true;
             webusbThis.fileArray = [];
-            return( new Promise<Array<string>> ((resolve, reject) =>{
+            return( new Promise<Array<string>> ((resolve, reject) => {
                 webusbThis.sendWithCB('ls\n', function () {
                     let retArray = webusbThis.incomingData;
                     for (var i = 0; i < webusbThis.incomingData.length; i++) {

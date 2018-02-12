@@ -7,7 +7,7 @@ import { WebUsbService } from '../../../../shared/webusb/webusb.service';
     templateUrl: 'sidebar-device-files.component.html',
     styleUrls: ['sidebar-device-files.component.css']
 })
-export class SidebarDeviceFilesComponent implements OnInit{
+export class SidebarDeviceFilesComponent implements OnInit {
     @Output()
     private onFileSelected = new EventEmitter();
 
