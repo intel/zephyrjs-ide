@@ -12,15 +12,15 @@ export class WebUsbService {
     private record = false;
     private incomingData = []; // Array<string>;
     private incomingCB: any = null;
-    public fileCount : number = 0;
-    fileArray = [];
+    private fileCount : number = 0;
+    private fileArray = [];
     constructor(private settingsService: SettingsService) {
         this.usb = (navigator as any).usb;
     }
     // Handle incoming data from the device
     public onReceive(data: string) {
         // If this is the closing message, call any callbacks
-        if (data === "[33macm> [39;0m") {
+        if (data === '[33macm> [39;0m') {
             this.record = false;
             // Call the callback and reset data
             if (this.incomingCB) {
@@ -28,8 +28,7 @@ export class WebUsbService {
             }
             this.incomingCB = null;
             this.incomingData = [];
-        }
-        else if (this.record) {
+        } else if (this.record) {
             this.incomingData.push(data);
         }
     }
@@ -69,7 +68,7 @@ export class WebUsbService {
                 this.port.onReceiveError = (error: DOMException) => {
                     this.onReceiveError(error);
                 };
-		// Go ahead and get the file list / count
+                // Go ahead and get the file list / count
                 this.lsArray();
             });
         };
@@ -136,9 +135,9 @@ export class WebUsbService {
 
     public load(data: string) : Promise<string> {
         let webusbThis = this;
-        let loadStr = "";
+        let loadStr = '';
         webusbThis.record = true;
-        return( new Promise<string>((resolve, reject) =>{
+        return( new Promise<string> ((resolve, reject) =>{
             webusbThis.sendWithCB('cat ' + data + '\n', function () {
                 // Remove the command line from the array
                 webusbThis.incomingData.splice(0, 2);
@@ -156,9 +155,9 @@ export class WebUsbService {
 
     public rm(data: string) : Promise<string> {
         let webusbThis = this;
-        return (new Promise<string>((resolve, reject) => {
-            webusbThis.sendWithCB('rm ' + data + '\n', function(){
-                resolve("rm " + data + " done");
+        return (new Promise<string> ((resolve, reject) => {
+            webusbThis.sendWithCB('rm ' + data + '\n', function() {
+                resolve('rm ' + data + ' done');
             });
         }));
     }
@@ -169,7 +168,7 @@ export class WebUsbService {
             let webusbThis = this;
             webusbThis.record = true;
             webusbThis.fileArray = [];
-            return( new Promise<Array<string>>((resolve, reject) =>{
+            return( new Promise<Array<string>> ((resolve, reject) =>{
                 webusbThis.sendWithCB('ls\n', function () {
                     let retArray = webusbThis.incomingData;
                     for (var i = 0; i < webusbThis.incomingData.length; i++) {
@@ -180,7 +179,7 @@ export class WebUsbService {
                         }
                     }
                     let itr = 0;
-                    for (var i = 0; i < retArray.length; i++) {
+                    for (i = 0; i < retArray.length; i++) {
                         if (!isNaN(retArray[i] as any)) {
                             webusbThis.fileArray[itr] = {size: retArray[i], name: retArray[i + 1]};
                             itr++;
@@ -192,8 +191,7 @@ export class WebUsbService {
                     resolve(retArray);
                 });
             }));
-        }
-        else {
+        } else {
             return new Promise((resolve, reject) => {
                 resolve([]);
             });
