@@ -5,7 +5,8 @@ import { WebUsbService } from '../../../../shared/webusb/webusb.service';
     moduleId: module.id,
     selector: 'sd-sidebar-device-files',
     templateUrl: 'sidebar-device-files.component.html',
-    styleUrls: ['sidebar-device-files.component.css']
+    styleUrls: ['sidebar-device-files.component.css'],
+    providers: [WebUsbService]
 })
 export class SidebarDeviceFilesComponent implements OnInit {
     @Output()
