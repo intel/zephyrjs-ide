@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { SettingsService } from '../../settings.service';
 import { WebUsbService } from '../../../../shared/webusb/webusb.service';
 
 @Component({
@@ -6,7 +7,7 @@ import { WebUsbService } from '../../../../shared/webusb/webusb.service';
     selector: 'sd-sidebar-device-files',
     templateUrl: 'sidebar-device-files.component.html',
     styleUrls: ['sidebar-device-files.component.css'],
-    providers: [WebUsbService]
+    providers: [SettingsService, WebUsbService]
 })
 export class SidebarDeviceFilesComponent implements OnInit {
     @Output()
