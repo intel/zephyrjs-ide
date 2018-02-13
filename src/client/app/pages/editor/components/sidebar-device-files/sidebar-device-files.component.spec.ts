@@ -15,7 +15,8 @@ export function main() {
 
       TestBed.configureTestingModule({
         declarations: [TestComponent],
-        imports: [SidebarDeviceFilesModule]
+        imports: [SidebarDeviceFilesModule],
+        providers: [SettingsService]
       });
     });
 
