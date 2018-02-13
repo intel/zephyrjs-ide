@@ -5,7 +5,7 @@ import {
 } from '@angular/core/testing';
 
 import { SidebarDeviceFilesModule } from './sidebar-device-files.module';
-
+import { SettingsService } from '../../settings.service';
 
 export function main() {
    describe('SidebarDeviceFiles component', () => {
