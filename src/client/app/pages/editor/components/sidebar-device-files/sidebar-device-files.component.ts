@@ -1,14 +1,14 @@
 import { Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { SettingsService } from '../../settings.service';
-import { LocalStorageService } from 'angular-2-local-storage';
-import { WebUsbService } from '../../../../shared/webusb/webusb.service';
+// import { WebUsbService } from '../../../../shared/webusb/webusb.service';
+// import { WebUsbPort } from '../../../../shared/webusb/webusb.port';
+// import { SettingsService } from '../../settings.service';
 
 @Component({
     moduleId: module.id,
     selector: 'sd-sidebar-device-files',
     templateUrl: 'sidebar-device-files.component.html',
-    styleUrls: ['sidebar-device-files.component.css'],
-    providers: [SettingsService, WebUsbService, LocalStorageService]
+    styleUrls: ['sidebar-device-files.component.css']
+//    providers: [WebUsbService, SettingsService]
 })
 export class SidebarDeviceFilesComponent implements OnInit {
     @Output()
@@ -20,7 +20,9 @@ export class SidebarDeviceFilesComponent implements OnInit {
     private fileCount : number = 0;
     private fileArray = [];
     // subscription: Subscription;
-    constructor(public webusbService: WebUsbService) { }
+    //constructor(){}
+    // constructor(private settingsService: SettingsService,
+    //             private webusbService: WebUsbService) { }
 
     ngOnInit() {
         this.getFileInfo();
@@ -28,33 +30,33 @@ export class SidebarDeviceFilesComponent implements OnInit {
 
     // tslint:disable-next-line:no-unused-locals
     public onDeviceFilenameClicked(filename: string) {
-        this.webusbService.load(filename)
-        .then(async (res) => {
-        this.onFileSelected.emit({
-            filename: filename,
-            contents: res
-        });
-    });
+    //     this.webusbService.load(filename)
+    //     .then(async (res) => {
+    //     this.onFileSelected.emit({
+    //         filename: filename,
+    //         contents: res
+    //     });
+    // });
         return false;
     }
 
     // tslint:disable-next-line:no-unused-locals
     public onDeleteDeviceFileClicked(filename: string) {
         let that = this;
-        this.webusbService.rm(filename)
-        .then(async (res) => {
-            that.onDeviceFileDeleted.emit(filename);
-            that.getFileInfo();
-        });
+        // this.webusbService.rm(filename)
+        // .then(async (res) => {
+        //     that.onDeviceFileDeleted.emit(filename);
+        //     that.getFileInfo();
+        // });
         return false;
     }
 
     private getFileInfo() {
-        let deviceThis = this;
-        this.webusbService.lsArray()
-        .then( function (arr) {
-            deviceThis.fileArray = arr;
-            deviceThis.fileCount = deviceThis.fileArray.length;
-        });
+        // let deviceThis = this;
+        // this.webusbService.lsArray()
+        // .then( function (arr) {
+        //     deviceThis.fileArray = arr;
+        //     deviceThis.fileCount = deviceThis.fileArray.length;
+        // });
     }
 }
