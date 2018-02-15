@@ -136,7 +136,7 @@
                 }
             }
 
-            .files, .examples {
+            .files, .device, .examples {
                 .title {
                     font-size: 13px;
                     font-weight: bold;
@@ -147,7 +147,7 @@
                 }
             }
 
-            .files {
+            .files, .device {
                 a.filename {
                     width: calc(100% - 38px);
                     display: inline-block;

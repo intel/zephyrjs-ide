@@ -12,7 +12,7 @@ import { FileService } from './file.service';
 import { ExampleService } from './example.service';
 import { EditorTab } from './editor.tab';
 import { WebUsbService } from '../../shared/webusb/webusb.service';
-
+import { SidebarDeviceFilesModule } from './components/sidebar-device-files/sidebar-device-files.module';
 
 @Component({
     moduleId: module.id,
@@ -56,7 +56,8 @@ export class EditorComponent {
         public fileService: FileService,
         private localStorageService: LocalStorageService,
         private notificationsService: NotificationsService,
-        public webusbService: WebUsbService) {
+        public webusbService: WebUsbService,
+        public deviceFiles: SidebarDeviceFilesModule) {
 
         this.tabs = appDataService.editorTabs;
 
@@ -153,6 +154,19 @@ export class EditorComponent {
     }
 
     // tslint:disable-next-line:no-unused-locals
+    public onDeviceFilesClicked() {
+        if (this.secondarySidebarOptions.opened &&
+            this.secondarySidebarOptions.content === 'device') {
+            this.onCloseSecondarySidebar();
+        } else {
+            this.secondarySidebarOptions.content = 'device';
+            this.secondarySidebarOptions.opened = true;
+            this._adjustBackdropPosition();
+        }
+        return false;
+    }
+
+    // tslint:disable-next-line:no-unused-locals
     public onFileSelected(file: any) {
         // Switch to it if we already have it open
         for(let tab of this.tabs) {
@@ -216,6 +230,36 @@ export class EditorComponent {
 
     // tslint:disable-next-line:no-unused-locals
     public onGitHubFileSelected(file: any) {
+        // Switch to it if we already have it open
+        for(let tab of this.tabs) {
+            if (tab.title === file.filename) {
+                this.appDataService.activateEditorTab(tab);
+                this.onCloseSecondarySidebar();
+                return;
+            }
+        }
+
+        // Otherwise we create a new tab
+
+        function _setContents(tab: EditorTab, contents: string) {
+            // Wait for editor to become available
+            setTimeout(() => {
+                if (tab.editor !== null) {
+                    tab.editor.setValue(contents);
+                } else {
+                    _setContents(tab, contents);
+                }
+            }, 100);
+        }
+
+        let newTab = this.appDataService.newEditorTab();
+        newTab.title = file.filename;
+        _setContents(newTab, file.contents);
+
+        this.onCloseSecondarySidebar();
+    }
+
+    public onDeviceFileSelected(file: any) {
         // Switch to it if we already have it open
         for(let tab of this.tabs) {
             if (tab.title === file.filename) {

@@ -9,13 +9,28 @@ import { SettingsService } from '../../pages/editor/settings.service';
 export class WebUsbService {
     public usb: any = null;
     public port: WebUsbPort = null;
-
+    private record = false;
+    private incomingData = []; // Array<string>;
+    private incomingCB: any = null;
+    private fileCount : number = 0;
+    private fileArray = [];
     constructor(private settingsService: SettingsService) {
         this.usb = (navigator as any).usb;
     }
-
+    // Handle incoming data from the device
     public onReceive(data: string) {
-        // tslint:disable-next-line:no-empty
+        // If this is the closing message, call any callbacks
+        if (data === '[33macm> [39;0m') {
+            this.record = false;
+            // Call the callback and reset data
+            if (this.incomingCB) {
+                this.incomingCB();
+            }
+            this.incomingCB = null;
+            this.incomingData = [];
+        } else if (this.record) {
+            this.incomingData.push(data);
+        }
     }
 
     public onReceiveError(error: DOMException) {
@@ -53,6 +68,8 @@ export class WebUsbService {
                 this.port.onReceiveError = (error: DOMException) => {
                     this.onReceiveError(error);
                 };
+                // Go ahead and get the file list / count
+                this.lsArray();
             });
         };
 
@@ -120,6 +137,71 @@ export class WebUsbService {
         return this.port.stop();
     }
 
+    public load(data: string) : Promise<string> {
+        let webusbThis = this;
+        let loadStr = '';
+        webusbThis.record = true;
+        return( new Promise<string> ((resolve, reject) => {
+            webusbThis.sendWithCB('cat ' + data + '\n', function () {
+                // Remove the command line from the array
+                webusbThis.incomingData.splice(0, 2);
+                loadStr = webusbThis.incomingData.join('');
+                resolve(loadStr);
+            });
+        }));
+    }
+
+    // Send a command 'data' and resolve using 'cb' once the device replies
+    public sendWithCB(data: string, cb: any) {
+        this.incomingCB = cb;
+        this.send(data);
+    }
+
+    public rm(data: string) : Promise<string> {
+        let webusbThis = this;
+        return (new Promise<string> ((resolve, reject) => {
+            webusbThis.sendWithCB('rm ' + data + '\n', function() {
+                resolve('rm ' + data + ' done');
+            });
+        }));
+    }
+
+    public lsArray(): Promise<Array<string>> {
+        if (this.port) {
+            let retArray = [];
+            let webusbThis = this;
+            webusbThis.record = true;
+            webusbThis.fileArray = [];
+            return( new Promise<Array<string>> ((resolve, reject) => {
+                webusbThis.sendWithCB('ls\n', function () {
+                    let retArray = webusbThis.incomingData;
+                    for (var i = 0; i < webusbThis.incomingData.length; i++) {
+                        retArray[i] = retArray[i].replace(/[^0-9a-z\.]/gi, '');
+                        if (retArray[i] === '') {
+                            retArray.splice(i, 1);
+                            i--;
+                        }
+                    }
+                    let itr = 0;
+                    for (i = 0; i < retArray.length; i++) {
+                        if (!isNaN(retArray[i] as any)) {
+                            webusbThis.fileArray[itr] = {size: retArray[i], name: retArray[i + 1]};
+                            itr++;
+                            i++;
+                        }
+                    }
+                    retArray = webusbThis.fileArray;
+                    webusbThis.fileCount = retArray.length;
+                    resolve(retArray);
+                });
+            }));
+        } else {
+            return new Promise((resolve, reject) => {
+                resolve([]);
+            });
+        }
+    }
+
     public save(filename: string, data: string): Promise<string> {
         if (this.port === null) {
             return new Promise<string>((resolve, reject) => {
@@ -129,5 +211,9 @@ export class WebUsbService {
 
         let throttle = this.settingsService.getDeviceThrottle();
         return this.port.save(filename, data, throttle);
+    }
+
+    public deviceFileCount(): number {
+        return this.fileCount;
     }
 }

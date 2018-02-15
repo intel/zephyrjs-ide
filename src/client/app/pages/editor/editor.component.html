@@ -58,6 +58,17 @@
                     </span>
                 </a>
             </li>
+            <li  *ngIf="webusbService.isConnected() === true">
+                <a href="#" class="device"
+                   [class.active]="secondarySidebarOptions.content === 'device'"
+                   (click)="onDeviceFilesClicked()">
+                    <fa [name]="'folder'"></fa>
+                    <span *ngIf="sidebarOptions.opened">
+                        Device
+                        <span class="count">({{ webusbService.deviceFileCount() }})</span>
+                    </span>
+                </a>
+            </li>
         </ul>
 
         <button class="toggleCollapse" (click)="onToggleSidebar()">
@@ -107,6 +118,12 @@
                 *ngIf="secondarySidebarOptions.content === 'settings'"
                 class="settings">
             </sd-sidebar-settings>
+
+            <sd-sidebar-device-files
+                *ngIf="secondarySidebarOptions.content === 'device'"
+                (onFileSelected)="onDeviceFileSelected($event)"
+                class="device">
+            </sd-sidebar-device-files>
         </ng-sidebar>
 
         <vertical-split-pane
