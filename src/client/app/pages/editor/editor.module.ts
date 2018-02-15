@@ -20,6 +20,7 @@ import { SidebarFilesModule } from './components/sidebar-files/sidebar-files.mo
 import { SidebarExamplesModule } from './components/sidebar-examples/sidebar-examples.module';
 import { SidebarGitHubModule } from './components/sidebar-github/sidebar-github.module';
 import { SidebarSettingsModule } from './components/sidebar-settings/sidebar-settings.module';
+import { SidebarDeviceFilesModule } from './components/sidebar-device-files/sidebar-device-files.module';
 import { StatusBarModule } from './components/statusbar/statusbar.module';
 import { TabBarModule } from './components/tab-bar/tab-bar.module';
 
@@ -49,6 +50,7 @@ import { EditorComponent } from './editor.component';
         SidebarExamplesModule,
         SidebarGitHubModule,
         SidebarSettingsModule,
+        SidebarDeviceFilesModule,
         StatusBarModule,
         TabBarModule,
 
