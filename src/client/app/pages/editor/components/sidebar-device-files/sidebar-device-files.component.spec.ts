@@ -4,7 +4,15 @@ import {
   TestBed
 } from '@angular/core/testing';
 
+// Third party
+import {
+    LocalStorageModule, LocalStorageService
+} from 'angular-2-local-storage';
+
+import { AppDataService } from '../../../../app.data.service';
 import { SidebarDeviceFilesModule } from './sidebar-device-files.module';
+import { SettingsService } from '../../settings.service';
+import { WebUsbService } from '../../../../shared/webusb/webusb.service';
 
 export function main() {
    describe('SidebarDeviceFiles component', () => {
@@ -14,7 +22,18 @@ export function main() {
 
       TestBed.configureTestingModule({
         declarations: [TestComponent],
-        imports: [SidebarDeviceFilesModule]
+        providers: [
+            AppDataService,
+            LocalStorageService,
+            SettingsService,
+            WebUsbService
+        ],
+        imports: [
+            LocalStorageModule.withConfig({
+                prefix: 'zephyrjs-ide-test',
+                storageType: 'localStorage'
+            }),
+            SidebarDeviceFilesModule]
       });
     });
 
