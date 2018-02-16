@@ -52,72 +52,6 @@ export class WebUsbPort {
         return this.ideMode;
     }
 
-    private ideHandler(input: any): boolean {
-        try {
-            let str = this.decoder.decode(input.data); // may be partial JSON
-            this.onReceive(str);  // For now, just echo whatever is received
-            // TODO: wait until a full this.message is received, then JSON.parse.
-        } catch (err) {
-            return false;
-        }
-        return true;
-    }
-
-    private terminalHandler(input: any) {
-        let skip = true,
-            skip_prompt = true,
-            str = this.decoder.decode(input.data);
-
-
-        if (!this.ashellReady)
-            this.ashellReady = /^(\x1b\[33macm)/.test(str);
-
-        if (str === 'raw') {
-            this.rawMode = true;
-            str = '';
-        } else if (str === 'ihex') {
-            this.rawMode = false;
-            str = '';
-        }
-
-        skip = !this.rawMode && /^(\n|\[.*\])/.test(str);
-
-        if (str === 'echo_off') {
-            this.echoMode = false;
-            str = '';
-        } else if (str === 'echo_on') {
-            this.echoMode = true;
-            str = '';
-        }
-
-        skip_prompt = !this.echoMode && /^(\r|\n|\x1b\[33macm)/.test(str);
-
-        if (!skip && !skip_prompt) {
-            if (str.length === 1 &&
-                str.charCodeAt(0) !== 13 &&
-                str.charCodeAt(0) !== 10 &&
-                this.previousRead !== undefined &&
-                this.previousRead.charCodeAt(
-                    this.previousRead.length - 1) === 13) {
-                str = '\r\n' + str;
-            }
-
-            this.onReceive(str);
-        }
-
-        if (!skip)
-            this.previousRead = str;
-    }
-
-    private handleInput(result: any) {
-        // TODO: check status: "ok", "stall", "babble"
-        if (this.ideMode) {
-            this.ideHandler(result);
-        } else {
-            this.terminalHandler(result);
-        }
-    }
-
     public connect(): Promise<void> {
         this.rawMode = true;
         this.echoMode = true;
@@ -168,7 +102,7 @@ export class WebUsbPort {
                     finish();
                 }).catch((error: DOMException) => {
                         // fall back to the other webusb interface (uart vs raw)
-                        this.webusb_iface = this.webusb_iface == WEBUSB_RAW ?
+                        this.webusb_iface = this.webusb_iface === WEBUSB_RAW ?
                                                 WEBUSB_UART : WEBUSB_RAW;
                         this.device.claimInterface(this.webusb_iface)
                         .then(() => {
@@ -227,7 +161,7 @@ export class WebUsbPort {
     }
 
     public init() {
-        if (this.webusb_iface == WEBUSB_UART) {
+        if (this.webusb_iface === WEBUSB_UART) {
             this.send('\n');
         }
     }
@@ -261,43 +195,6 @@ export class WebUsbPort {
         return this.sendConsoleSave(filename, data, throttle);
     }
 
-    private sendConsoleSave(filename: string, data: string, throttle: boolean): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            if (data.length === 0) {
-                reject('Empty data');
-            }
-
-            if (filename.length === 0) {
-                reject('Empty File Name');
-            }
-
-            this.send('echo off\n')
-                .then(() => this.send('set transfer raw\n'))
-                .then(() => this.send('stop\n'))
-                .then(() => this.send('load ' + filename + '\n'))
-                .then(async () => {
-                    var count = 0;
-                    for (let line of data.split('\n')) {
-                        // Every 20 lines sleep for a moment to let ashell
-                        // catch up if throttle is enabled. This prevents
-                        // overflowing the UART.
-                        if (!throttle || count < 20) {
-                            this.send(line + '\n');
-                        } else {
-                            await this.sleep(700);
-                            this.send(line + '\n');
-                            count = 0;
-                        }
-                        count ++;
-                    }
-                })
-                .then(() => this.send('\x1A\n'))
-                .then(() => this.send('echo on\n'))
-                .then((warning: string) => resolve(warning))
-                .catch((error: string) => reject(error));
-        });
-    }
-
     public run(data: string, throttle: boolean): Promise<string> {
         if (this.ideMode) {
             return  this.sendIdeRun(data);  // data: a file name
@@ -305,60 +202,11 @@ export class WebUsbPort {
         return this.sendConsoleRun(data, throttle);  // data: stream (program)
     }
 
-    private sendConsoleRun(data: string, throttle: boolean): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            if (data.length === 0) {
-                reject('Empty data');
-            }
-
-            this.send('echo off\n')
-                .then(() => this.send('set transfer ihex\n'))
-                .then(() => this.send('stop\n'))
-                .then(() => this.send('load\n'))
-                .then(async () => {
-                    let ihex =
-                        this.convIHex(data);
-                    var count = 0;
-                    for (let line of ihex.split('\n')) {
-                        // Every 20 lines sleep for a moment to let ashell
-                        // catch up if throttle is enabled. This prevents
-                        // overflowing the UART
-                        if (!throttle || count < 20) {
-                            this.send(line + '\n');
-                        } else {
-                            await this.sleep(700);
-                            this.send(line + '\n');
-                            count = 0;
-                        }
-                        count ++;
-                    }
-                })
-                .then(() => this.send('run temp.dat\n'))
-                .then(() => this.send('set transfer raw\n'))
-                .then(() => this.send('echo on\n'))
-                .then((warning: string) => resolve(warning))
-                .catch((error: string) => reject(error));
-        });
-    }
-
     public stop(): Promise<string> {
         if (this.ideMode) {
             return  this.sendIdeStop();  // takes a file name
         }
         return this.sendConsoleStop();  // takes a stream (program)
-    }
-
-    private sendConsoleStop(): Promise<string> {
-        return this.send('stop\n');
-    }
-
-    private convIHex(source: string): string {
-      let array = intArrayFromString(source);
-      let ptr = allocate(array, 'i8', ALLOC_NORMAL);
-      let output = _convert_ihex(ptr);
-      let iHexString = Pointer_stringify(output);
-      _free(ptr);
-      return iHexString;
     }
 
     public sendIdeInit(): Promise<string>
@@ -438,4 +286,155 @@ export class WebUsbPort {
         return this.send('{reboot}\n');
     }
 
+    private sendConsoleSave(filename: string, data: string, throttle: boolean): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            if (data.length === 0) {
+                reject('Empty data');
+            }
+
+            if (filename.length === 0) {
+                reject('Empty File Name');
+            }
+
+            this.send('echo off\n')
+                .then(() => this.send('set transfer raw\n'))
+                .then(() => this.send('stop\n'))
+                .then(() => this.send('load ' + filename + '\n'))
+                .then(async () => {
+                    var count = 0;
+                    for (let line of data.split('\n')) {
+                        // Every 20 lines sleep for a moment to let ashell
+                        // catch up if throttle is enabled. This prevents
+                        // overflowing the UART.
+                        if (!throttle || count < 20) {
+                            this.send(line + '\n');
+                        } else {
+                            await this.sleep(700);
+                            this.send(line + '\n');
+                            count = 0;
+                        }
+                        count ++;
+                    }
+                })
+                .then(() => this.send('\x1A\n'))
+                .then(() => this.send('echo on\n'))
+                .then((warning: string) => resolve(warning))
+                .catch((error: string) => reject(error));
+        });
+    }
+
+    private ideHandler(input: any): boolean {
+        try {
+            let str = this.decoder.decode(input.data); // may be partial JSON
+            this.onReceive(str);  // For now, just echo whatever is received
+            // TODO: wait until a full this.message is received, then JSON.parse.
+        } catch (err) {
+            return false;
+        }
+        return true;
+    }
+
+    private terminalHandler(input: any) {
+        let skip = true,
+            skip_prompt = true,
+            str = this.decoder.decode(input.data);
+
+
+        if (!this.ashellReady)
+            this.ashellReady = /^(\x1b\[33macm)/.test(str);
+
+        if (str === 'raw') {
+            this.rawMode = true;
+            str = '';
+        } else if (str === 'ihex') {
+            this.rawMode = false;
+            str = '';
+        }
+
+        skip = !this.rawMode && /^(\n|\[.*\])/.test(str);
+
+        if (str === 'echo_off') {
+            this.echoMode = false;
+            str = '';
+        } else if (str === 'echo_on') {
+            this.echoMode = true;
+            str = '';
+        }
+
+        skip_prompt = !this.echoMode && /^(\r|\n|\x1b\[33macm)/.test(str);
+
+        if (!skip && !skip_prompt) {
+            if (str.length === 1 &&
+                str.charCodeAt(0) !== 13 &&
+                str.charCodeAt(0) !== 10 &&
+                this.previousRead !== undefined &&
+                this.previousRead.charCodeAt(
+                    this.previousRead.length - 1) === 13) {
+                str = '\r\n' + str;
+            }
+
+            this.onReceive(str);
+        }
+
+        if (!skip)
+            this.previousRead = str;
+    }
+
+    private handleInput(result: any) {
+        // TODO: check status: "ok", "stall", "babble"
+        if (this.ideMode) {
+            this.ideHandler(result);
+        } else {
+            this.terminalHandler(result);
+        }
+    }
+
+    private sendConsoleRun(data: string, throttle: boolean): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            if (data.length === 0) {
+                reject('Empty data');
+            }
+
+            this.send('echo off\n')
+                .then(() => this.send('set transfer ihex\n'))
+                .then(() => this.send('stop\n'))
+                .then(() => this.send('load\n'))
+                .then(async () => {
+                    let ihex =
+                        this.convIHex(data);
+                    var count = 0;
+                    for (let line of ihex.split('\n')) {
+                        // Every 20 lines sleep for a moment to let ashell
+                        // catch up if throttle is enabled. This prevents
+                        // overflowing the UART
+                        if (!throttle || count < 20) {
+                            this.send(line + '\n');
+                        } else {
+                            await this.sleep(700);
+                            this.send(line + '\n');
+                            count = 0;
+                        }
+                        count ++;
+                    }
+                })
+                .then(() => this.send('run temp.dat\n'))
+                .then(() => this.send('set transfer raw\n'))
+                .then(() => this.send('echo on\n'))
+                .then((warning: string) => resolve(warning))
+                .catch((error: string) => reject(error));
+        });
+    }
+
+    private sendConsoleStop(): Promise<string> {
+        return this.send('stop\n');
+    }
+
+    private convIHex(source: string): string {
+      let array = intArrayFromString(source);
+      let ptr = allocate(array, 'i8', ALLOC_NORMAL);
+      let output = _convert_ihex(ptr);
+      let iHexString = Pointer_stringify(output);
+      _free(ptr);
+      return iHexString;
+    }
 }
