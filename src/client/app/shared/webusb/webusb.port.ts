@@ -209,8 +209,7 @@ export class WebUsbPort {
         return this.sendConsoleStop();  // takes a stream (program)
     }
 
-    public sendIdeInit(): Promise<string>
-    {
+    public sendIdeInit(): Promise<string>  {
         this.state = 'init';
         return this.send('{init}\n');
         // TODO: start timer for reply
