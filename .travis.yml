@@ -30,6 +30,7 @@ before_script:
   - npm install
   - npm run webdriver-update
   - npm rebuild node-sass
+  - npm list
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sh -e /etc/init.d/xvfb start; fi
   - nohup bash -c "webdriver-manager start &" # Protractor CI
 
