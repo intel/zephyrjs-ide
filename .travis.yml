@@ -1,9 +1,12 @@
 language: node_js
-node_js:
-  - "6"
+node_js: stable
 
 sudo: required
 dist: trusty
+
+addons:
+  firefox: latest
+  chrome: stable
 
 os:
   - linux
@@ -17,10 +20,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask install google-chrome; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install yarn; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=:99.0; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CHROME_BIN=chromium-browser; fi  # Karma CI
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CHROME_BIN=/usr/bin/google-chrome; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libappindicator1 fonts-liberation; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo dpkg -i google-chrome*.deb; fi
 
 before_script:
   - npm i -g npm@^5.3.0 && npm --version
