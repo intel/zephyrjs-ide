@@ -5,6 +5,9 @@ node_js:
 sudo: required
 dist: trusty
 
+jdk:
+  - oraclejdk8
+
 os:
   - linux
   - osx
@@ -21,9 +24,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libappindicator1 fonts-liberation; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo dpkg -i google-chrome*.deb; fi
+  - npm i -g npm@5.5.1 && npm --version
 
 before_script:
-  - npm i -g npm@^5.3.0 && npm --version
   - npm install webdriver-manager
   - npm install
   - npm run webdriver-update
@@ -38,9 +41,6 @@ branches:
   only:
     - master
     - travis
-
-cache:
-  directories: node_modules
 
 script:
   - npm run tests.all

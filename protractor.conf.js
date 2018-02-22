@@ -15,8 +15,9 @@ const config = {
   jasmineNodeOpts: {
     // showTiming: true,
     showColors: true,
-    isVerbose: false,
+    isVerbose: true,
     includeStackTrace: false,
+    maximumSpecCallbackDepth: 2000
     // defaultTimeoutInterval: 400000
   },
 
@@ -24,7 +25,7 @@ const config = {
 
   capabilities: {
     browserName: 'chrome',
-    version: 'latest',
+    version: '3.24',
     'chromeOptions' : {
       args: [
         '--window-size=1024,800',
