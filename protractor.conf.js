@@ -17,15 +17,15 @@ const config = {
     showColors: true,
     isVerbose: true,
     includeStackTrace: false,
-    maximumSpecCallbackDepth: 2000
-    // defaultTimeoutInterval: 400000
+    // maximumSpecCallbackDepth: 2000
+    defaultTimeoutInterval: 60000
   },
 
   directConnect: true,
 
   capabilities: {
     browserName: 'chrome',
-    version: '3.24',
+    version: 'latest',
     'chromeOptions' : {
       args: [
         '--window-size=1024,800',

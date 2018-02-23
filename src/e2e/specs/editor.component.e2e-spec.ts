@@ -3,27 +3,37 @@ import { browser, element, by, protractor, ElementFinder } from 'protractor';
 
 describe('Editor', () => {
     beforeEach(async () => {
+        console.log('BJONES editor before await');
         await browser.get('/#/editor');
+        console.log('BJONES editor AFTER await');
         return browser.driver.wait(function () {
+            console.log('BJONES editor start');
             let until = protractor.ExpectedConditions;
             let elem = element(by.css('sd-editor'));
             browser.wait(until.visibilityOf(elem), 10000);
+            console.log('BJONES editor start DONE');
             return elem;
         });
 
     });
 
     it('should have correct nav text for Home', async () => {
+        console.log('BJONES have correct nav text for Home');
         let el = element(by.css('sd-navbar .navbar-right li:nth-child(1) a'));
         expect(await el.getText()).toEqual('Home');
+        console.log('BJONES have correct nav text for Home DONE');
     });
 
     it('should have correct nav text for Editor', async () => {
+        console.log('BJONES have correct nav text for Editor');
         let el = element(by.css('sd-navbar .navbar-right li:nth-child(2) a'));
         expect(await el.getText()).toEqual('Editor');
+        console.log('BJONES have correct nav text for Editor DONE');
+
     });
 
     it('adding/removing tabs should work', async () => {
+        console.log('BJONES removing tabs should work');
         let btn = element(by.id('new-tab-button'));
         btn.click();
 
@@ -33,6 +43,7 @@ describe('Editor', () => {
         let closeTabBtn = element(by.css('#tab-bar .nav-item:last-child .close-tab'));
         closeTabBtn.click();
         expect(await tablist.count()).toBe(1);
+        console.log('BJONES removing tabs should work DONE');
     });
 
     it('editing tab title should work', async () => {
