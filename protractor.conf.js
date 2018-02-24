@@ -18,7 +18,7 @@ const config = {
     isVerbose: true,
     includeStackTrace: false,
     // maximumSpecCallbackDepth: 2000
-    defaultTimeoutInterval: 60000
+    defaultTimeoutInterval: 30000
   },
 
   directConnect: true,
