@@ -15,9 +15,10 @@ const config = {
   jasmineNodeOpts: {
     // showTiming: true,
     showColors: true,
-    isVerbose: false,
+    isVerbose: true,
     includeStackTrace: false,
-    // defaultTimeoutInterval: 400000
+    // maximumSpecCallbackDepth: 2000
+    defaultTimeoutInterval: 30000
   },
 
   directConnect: true,
