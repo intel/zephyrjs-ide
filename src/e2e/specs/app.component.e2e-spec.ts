@@ -13,13 +13,18 @@ describe('App', () => {
     it('should have <nav>', async () => {
         expect(await element(by.css('sd-navbar nav')).isPresent()).toEqual(true);
     });
+});
+
+describe('App part 2', () => {
+    beforeEach(async () => {
+        return await browser.get('/#/editor');
+    });
 
     it('routing should preserve editor tabs', () => {
         let tabs;
 
         // Initial check
         browser.ignoreSynchronization = true;
-        browser.get('/#/editor');
         tabs = element.all(by.css('sd-editor .left-component a.nav-link'));
         expect(tabs.count()).toEqual(1);
 
