@@ -9,27 +9,78 @@ import { SettingsService } from '../../pages/editor/settings.service';
 export class WebUsbService {
     public usb: any = null;
     public port: WebUsbPort = null;
-    private record = false;
-    private incomingData = []; // Array<string>;
+    private incomingData = [];
+    private incomingDataStr = "";
     private incomingCB: any = null;
-    private fileCount : number = 0;
+    private fileCount: number = 0;
     private fileArray = [];
+    private fileData = "";
+    private replyState: string;
+
     constructor(private settingsService: SettingsService) {
         this.usb = (navigator as any).usb;
     }
+
+    public consolePrint(data: string) {
+        // To be set once connected
+    }
+
     // Handle incoming data from the device
     public onReceive(data: string) {
-        // If this is the closing message, call any callbacks
-        if (data === '[33macm> [39;0m') {
-            this.record = false;
-            // Call the callback and reset data
-            if (this.incomingCB) {
-                this.incomingCB();
+        // Check if this is a reply message
+        let replyType = this.incomingReply(data);
+        if (replyType && replyType !== "none") {
+            this.incomingDataStr = "";
+            this.replyState = replyType;
+        }
+        // If currenly receiving a reply message stream, handle it
+        if (this.replyState) {
+            switch(this.replyState) {
+                case "cat":
+                    // Skip the reply lines by only recording stuff between
+                    if (replyType === null)
+                        this.fileData += data;
+                break;
+                case "list":
+                    this.incomingDataStr += data;
+                break;
+                case "save":
+                    this.port.sendIdeSave();
+                break;
+                default:
+                break;
             }
+        }
+        else if (replyType === null){
+            // This is a console print message
+            if (this.consolePrint) {
+                this.consolePrint(data);
+            }
+            console.log(data);
+        }
+
+        if (this.replyState && this.replyDone(data)) {
+            switch(this.replyState) {
+                case "cat":
+                    if (this.incomingCB)
+                        this.incomingCB(this.fileData);
+                    this.fileData = "";
+                break;
+                case "list":
+                    let replyObj = this.parseJSON(this.incomingDataStr);
+                    if (this.incomingCB)
+                        this.incomingCB(replyObj);
+                    this.incomingDataStr = "";
+                break;
+                case "rm":
+                    if (this.incomingCB)
+                        this.incomingCB(replyObj);
+                break;
+                default:
+                break;
+            }
+            this.replyState = null;
             this.incomingCB = null;
-            this.incomingData = [];
-        } else if (this.record) {
-            this.incomingData.push(data);
         }
     }
 
@@ -140,13 +191,9 @@ export class WebUsbService {
     public load(data: string) : Promise<string> {
         let webusbThis = this;
         let loadStr = '';
-        webusbThis.record = true;
         return( new Promise<string> ((resolve, reject) => {
-            webusbThis.sendWithCB('cat ' + data + '\n', function () {
-                // Remove the command line from the array
-                webusbThis.incomingData.splice(0, 2);
-                loadStr = webusbThis.incomingData.join('');
-                resolve(loadStr);
+            webusbThis.sendWithCB('{cat ' + data + '}\n', function (retStr: string) {
+                resolve(retStr);
             });
         }));
     }
@@ -160,39 +207,23 @@ export class WebUsbService {
     public rm(data: string) : Promise<string> {
         let webusbThis = this;
         return (new Promise<string> ((resolve, reject) => {
-            webusbThis.sendWithCB('rm ' + data + '\n', function() {
+            webusbThis.sendWithCB('{rm ' + data + '}\n', function() {
                 resolve('rm ' + data + ' done');
             });
         }));
     }
 
+    // Returns an array of the files on the device
     public lsArray(): Promise<Array<string>> {
         if (this.port) {
             let retArray = [];
             let webusbThis = this;
-            webusbThis.record = true;
             webusbThis.fileArray = [];
             return( new Promise<Array<string>> ((resolve, reject) => {
-                webusbThis.sendWithCB('ls\n', function () {
-                    let retArray = webusbThis.incomingData;
-                    for (var i = 0; i < webusbThis.incomingData.length; i++) {
-                        retArray[i] = retArray[i].replace(/[^0-9a-z\.]/gi, '');
-                        if (retArray[i] === '') {
-                            retArray.splice(i, 1);
-                            i--;
-                        }
-                    }
-                    let itr = 0;
-                    for (i = 0; i < retArray.length; i++) {
-                        if (!isNaN(retArray[i] as any)) {
-                            webusbThis.fileArray[itr] = {size: retArray[i], name: retArray[i + 1]};
-                            itr++;
-                            i++;
-                        }
-                    }
-                    retArray = webusbThis.fileArray;
-                    webusbThis.fileCount = retArray.length;
-                    resolve(retArray);
+                webusbThis.sendWithCB('{ls}\n', function (retObj: {"data":Array<object>}) {
+                    webusbThis.fileArray = retObj.data;
+                    webusbThis.fileCount = webusbThis.fileArray.length;
+                    resolve(webusbThis.fileArray);
                 });
             }));
         } else {
@@ -215,5 +246,37 @@ export class WebUsbService {
 
     public deviceFileCount(): number {
         return this.fileCount;
+    }
+
+    // Returns true if the reply is properly closed.
+    private replyDone(str: string) {
+        if (this.replyState === "cat") {
+            return (/"data":[\s\S]"end"/).test(str);
+        }
+        return (/.*"status"\s*:\s*([0-9]+).*$/m).test(str);
+    }
+
+    // Returns the reply type if its a reply, null if it is not a reply
+    private incomingReply(str: string): string {
+        let replyObj = ((/"reply"(.*?)"(.*?)"/).exec(str));
+        if (replyObj) {
+            let replyStr = replyObj[0];
+            let splitObj = replyStr.split(':').map(item => item.trim());
+            if (splitObj.length == 2)
+                return splitObj[1].replace(/['"]+/g, '');
+            else
+                return null;
+        }
+        return null;
+    }
+
+    private parseJSON = function (str: string): object {
+        let retVal = null;
+        try {
+            retVal = JSON.parse(str);
+            return retVal;
+        } catch (e) {
+            return retVal;
+        }
     }
 }
