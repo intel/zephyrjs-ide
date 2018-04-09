@@ -10,11 +10,11 @@ export class WebUsbService {
     public usb: any = null;
     public port: WebUsbPort = null;
     private incomingData = [];
-    private incomingDataStr = "";
+    private incomingDataStr = '';
     private incomingCB: any = null;
     private fileCount: number = 0;
     private fileArray = [];
-    private fileData = "";
+    private fileData = '';
     private replyState: string;
 
     constructor(private settingsService: SettingsService) {
@@ -29,29 +29,28 @@ export class WebUsbService {
     public onReceive(data: string) {
         // Check if this is a reply message
         let replyType = this.incomingReply(data);
-        if (replyType && replyType !== "none") {
-            this.incomingDataStr = "";
+        if (replyType && replyType !== 'none') {
+            this.incomingDataStr = '';
             this.replyState = replyType;
         }
         // If currenly receiving a reply message stream, handle it
         if (this.replyState) {
             switch(this.replyState) {
-                case "cat":
+                case 'cat':
                     // Skip the reply lines by only recording stuff between
                     if (replyType === null)
                         this.fileData += data;
                 break;
-                case "list":
+                case 'list':
                     this.incomingDataStr += data;
                 break;
-                case "save":
+                case 'save':
                     this.port.sendIdeSave();
                 break;
                 default:
                 break;
             }
-        }
-        else if (replyType === null){
+        } else if (replyType === null) {
             // This is a console print message
             if (this.consolePrint) {
                 this.consolePrint(data);
@@ -61,18 +60,18 @@ export class WebUsbService {
 
         if (this.replyState && this.replyDone(data)) {
             switch(this.replyState) {
-                case "cat":
+                case 'cat':
                     if (this.incomingCB)
                         this.incomingCB(this.fileData);
-                    this.fileData = "";
+                    this.fileData = '';
                 break;
-                case "list":
+                case 'list':
                     let replyObj = this.parseJSON(this.incomingDataStr);
                     if (this.incomingCB)
                         this.incomingCB(replyObj);
-                    this.incomingDataStr = "";
+                    this.incomingDataStr = '';
                 break;
-                case "rm":
+                case 'rm':
                     if (this.incomingCB)
                         this.incomingCB(replyObj);
                 break;
@@ -220,7 +219,7 @@ export class WebUsbService {
             let webusbThis = this;
             webusbThis.fileArray = [];
             return( new Promise<Array<string>> ((resolve, reject) => {
-                webusbThis.sendWithCB('{ls}\n', function (retObj: {"data":Array<object>}) {
+                webusbThis.sendWithCB('{ls}\n', function (retObj: {'data':Array<object>}) {
                     webusbThis.fileArray = retObj.data;
                     webusbThis.fileCount = webusbThis.fileArray.length;
                     resolve(webusbThis.fileArray);
@@ -250,27 +249,27 @@ export class WebUsbService {
 
     // Returns true if the reply is properly closed.
     private replyDone(str: string) {
-        if (this.replyState === "cat") {
-            return (/"data":[\s\S]"end"/).test(str);
+        if (this.replyState === 'cat') {
+            return (/'data':[\s\S]'end'/).test(str);
         }
-        return (/.*"status"\s*:\s*([0-9]+).*$/m).test(str);
+        return (/.*'status'\s*:\s*([0-9]+).*$/m).test(str);
     }
 
     // Returns the reply type if its a reply, null if it is not a reply
     private incomingReply(str: string): string {
-        let replyObj = ((/"reply"(.*?)"(.*?)"/).exec(str));
+        let replyObj = ((/'reply'(.*?)'(.*?)'/).exec(str));
         if (replyObj) {
             let replyStr = replyObj[0];
             let splitObj = replyStr.split(':').map(item => item.trim());
-            if (splitObj.length == 2)
-                return splitObj[1].replace(/['"]+/g, '');
+            if (splitObj.length === 2)
+                return splitObj[1].replace(/['']+/g, '');
             else
                 return null;
         }
         return null;
     }
 
-    private parseJSON = function (str: string): object {
+    private parseJSON (str: string): object {
         let retVal = null;
         try {
             retVal = JSON.parse(str);
