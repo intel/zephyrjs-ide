@@ -182,7 +182,7 @@ export class WebUsbPort {
             this.saveData = data.split('\n');
             this.send('{save ' + filename + ' ' + '$')
             .then(() => {
-                 resolve("Saving to file");
+                 resolve();
              })
             .catch((error:string) => { reject(error); });
         });
