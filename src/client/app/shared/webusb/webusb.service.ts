@@ -250,19 +250,19 @@ export class WebUsbService {
     // Returns true if the reply is properly closed.
     private replyDone(str: string) {
         if (this.replyState === 'cat') {
-            return (/'data':[\s\S]'end'/).test(str);
+            return (/"data":[\s\S]"end"/).test(str);
         }
-        return (/.*'status'\s*:\s*([0-9]+).*$/m).test(str);
+        return (/.*"status"\s*:\s*([0-9]+).*$/m).test(str);
     }
 
     // Returns the reply type if its a reply, null if it is not a reply
     private incomingReply(str: string): string {
-        let replyObj = ((/'reply'(.*?)'(.*?)'/).exec(str));
+        let replyObj = ((/"reply"(.*?)"(.*?)"/).exec(str));
         if (replyObj) {
             let replyStr = replyObj[0];
             let splitObj = replyStr.split(':').map(item => item.trim());
             if (splitObj.length === 2)
-                return splitObj[1].replace(/['']+/g, '');
+                return splitObj[1].replace(/[""]+/g, '');
             else
                 return null;
         }
