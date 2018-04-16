@@ -1,3 +1,14 @@
+2018-04-12 Brian J Jones <brian.j.jones@intel.com>
+	* Release: 0.23.0-alpha
+	* Feat: Updated to use the new WebUSB driver instead of UART
+	* Feat: Added typedefs for ZJS APIs
+	* Feat: New device side bar for accessing the file system
+	* Fix: Protractor tests
+	* Fix: Moved all private functions to remove Travis CI errors
+	* Chore: Packages updated for security fixes
+	* Chore: Changing links from '01org' to 'intel'
+
+
 2017-12-14 Sudarsana Nagineni <sudarsana.nagineni@intel.com>
 	* Release: 0.22.0-alpha
 	* Chore: add Zephyr based USB device default VID/PID to filters
