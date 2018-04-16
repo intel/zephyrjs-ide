@@ -58,6 +58,17 @@
                     </span>
                 </a>
             </li>
+            <li  *ngIf="webusbService.isConnected() === true">
+                <a href="#" class="device"
+                   [class.active]="secondarySidebarOptions.content === 'device'"
+                   (click)="onDeviceFilesClicked()">
+                    <fa [name]="'folder'"></fa>
+                    <span *ngIf="sidebarOptions.opened">
+                        Device
+                        <span class="count">({{ webusbService.deviceFileCount() }})</span>
+                    </span>
+                </a>
+            </li>
         </ul>
 
         <button class="toggleCollapse" (click)="onToggleSidebar()">
@@ -107,6 +118,12 @@
                 *ngIf="secondarySidebarOptions.content === 'settings'"
                 class="settings">
             </sd-sidebar-settings>
+
+            <sd-sidebar-device-files
+                *ngIf="secondarySidebarOptions.content === 'device'"
+                (onFileSelected)="onDeviceFileSelected($event)"
+                class="device">
+            </sd-sidebar-device-files>
         </ng-sidebar>
 
         <vertical-split-pane
@@ -215,14 +232,14 @@
     <div class="fluid-container">
         <div class="about">
             <span class="app-version">
-                <a href="https://github.com/01org/zephyrjs-ide/releases" target="_blank">
-                    v0.22.0-alpha
+                <a href="https://github.com/intel/zephyrjs-ide/releases" target="_blank">
+                    v0.23.0-alpha
                 </a>
             </span>
             <span class="separator">/</span>
             <span class="app-rev">
-                <a href="https://github.com/01org/zephyrjs-ide/commits" target="_blank">
-                    889f002
+                <a href="https://github.com/intel/zephyrjs-ide/commits" target="_blank">
+                    02a08ec
                 </a>
             </span>
         </div> <!-- ./about -->
