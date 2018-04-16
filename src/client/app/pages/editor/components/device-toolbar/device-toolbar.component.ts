@@ -49,10 +49,6 @@ export class DeviceToolbarComponent implements AfterViewInit {
 
     // tslint:disable-next-line:no-unused-locals
     public onConnectClicked() {
-        // TODO removed temporarily until new API in place
-        // this.webusbService.onReceive = (data: string) => {
-        //     this.appDataService.term.io.print(data);
-        // };
 
         this.webusbService.onReceiveError = (error: DOMException) => {
             this.webusbService.disconnect()
@@ -70,6 +66,9 @@ export class DeviceToolbarComponent implements AfterViewInit {
         this.webusbService.connect()
         .then(() => {
             this.appDataService.term.io.print('\r\nConnection established.\r\n');
+            this.webusbService.consolePrint = (data: string) => {
+                this.appDataService.term.io.print(data);
+                };
             this.webusbService.init();
 
             this.onSuccess.emit({
