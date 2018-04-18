@@ -26,7 +26,7 @@ var sensor = new Accelerometer({
     frequency: updateFrequency
 });
 
-sensor.onchange = function() {
+sensor.onreading = function() {
     console.log("acceleration (m/s^2): " +
                 " x=" + sensor.x +
                 " y=" + sensor.y +
@@ -177,7 +177,7 @@ var sensor = new Gyroscope({
     frequency: updateFrequency
 });
 
-sensor.onchange = function() {
+sensor.onreading = function() {
     console.log("rotation (rad/s): " +
                 " x=" + sensor.x +
                 " y=" + sensor.y +
@@ -302,11 +302,11 @@ var gyro = new Gyroscope({
     frequency: updateFrequency
 });
 
-accel.onchange = function() {
+accel.onreading = function() {
     SensorCharacteristic.valueChange(1, accel.x, accel.y, accel.z);
 };
 
-gyro.onchange = function() {
+gyro.onreading = function() {
     SensorCharacteristic.valueChange(0, gyro.x, gyro.y, gyro.z);
 };
 
