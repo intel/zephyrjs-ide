@@ -65,9 +65,9 @@ $ npm run build.prod
 $ npm run build.prod.exp
 
 # dev build of multiple applications (by default the value of --app is "app")
-$ npm start -- --app baz
-$ npm start -- --app foo
-$ npm start -- --app bar
+$ npm start --app baz
+$ npm start --app foo
+$ npm start --app bar
 ```
 
 *Please note*
