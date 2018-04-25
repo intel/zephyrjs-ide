@@ -22,7 +22,6 @@ describe('App part 2', () => {
 
     it('routing should preserve editor tabs', () => {
         let tabs;
-
         // Initial check
         browser.ignoreSynchronization = true;
         tabs = element.all(by.css('sd-editor .left-component a.nav-link'));
@@ -40,5 +39,7 @@ describe('App part 2', () => {
         element(by.css('sd-navbar .navbar-right li:nth-child(2) a')).click();
         tabs = element.all(by.css('sd-editor .left-component a.nav-link'));
         expect(tabs.count()).toEqual(2);
+        let closeTabBtn = element(by.css('#tab-bar .nav-item:last-child .close-tab'));
+        closeTabBtn.click();
     });
 });

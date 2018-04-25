@@ -58,8 +58,9 @@ describe('Editor', () => {
         expect(await editBtn.isDisplayed()).toBe(false);
         expect(await title.isDisplayed()).toBe(true);
         expect(await input.isDisplayed()).toBe(false);
-
         expect(await title.getText()).toBe('NEW TITLE');
+
+        closeBtn.click();
     });
 
     it('trying to have two tabs with the same title should fail', async () => {
@@ -90,7 +91,11 @@ describe('Editor', () => {
 
         // Sending a new key remove the error status
         input.sendKeys('0');
+        input.sendKeys(protractor.Key.ENTER);
         expect(await input.getAttribute('class')).not.toMatch('has-error');
+
+        let closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
+        closeTabBtn.click();
     });
 
 
@@ -138,6 +143,9 @@ describe('Editor', () => {
         expect(await element(by.css('.secondary-sidebar .files .size')).getText()).toBe('0 bytes');
 
         browser.executeScript('localStorage.removeItem("zephyrjs-ide.FILES.New title");');
+        filesLink.click();
+        let closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
+        closeTabBtn.click();
     });
 
     it('files link in sidebar should have correct count', async () => {
@@ -208,6 +216,8 @@ describe('Editor', () => {
 
         closeBtn.click();
         expect(await secondarySidebar.getCssValue('transform')).not.toBe('none');
+        let closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
+        closeTabBtn.click();
     });
 
     it('clicking on a file should open it', async () => {
@@ -252,6 +262,8 @@ describe('Editor', () => {
         expect(await element(by.css('#tab-bar .nav-item:first-child .tab-title')).getText()).toBe('FILENAME');
 
         browser.executeScript('localStorage.removeItem("zephyrjs-ide.FILES.FILENAME");');
+        let closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
+        closeTabBtn.click();
     });
 
     it('clicking on an example should open it', async () => {
@@ -277,6 +289,8 @@ describe('Editor', () => {
 
         // The tab count is still 2.
         expect(await tablist.count()).toBe(2);
+        let closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
+        closeTabBtn.click();
     });
 
     it('deleting a file should work', async () => {
@@ -302,19 +316,12 @@ describe('Editor', () => {
 
         expect(await count.getText()).toBe('(0)');
         browser.executeScript('localStorage.removeItem("zephyrjs-ide.FILES.FILENAME");');
-    });
+        // Close sidebar
+        filesLink.click();
 
-    it('should have 10 tabs at the most', async () => {
-        let btn = element(by.id('new-tab-button')),
-            tablist = element.all(by.css('#tab-bar .nav-item')),
-            closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
-
-        expect(await btn.isEnabled()).toBe(true);
-        for (let i = 0; i < 9; i++) {
-            btn.click();
-        }
-        expect(await btn.isEnabled()).toBe(false);
-        expect(await tablist.count()).toBe(10);
+        // Close tab
+        let closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
+        closeTabBtn.click();
     });
 
     it('toggling the sidebar should work', () => {
@@ -360,5 +367,18 @@ describe('Editor', () => {
         // Tab # 1 is always reserved.
         expect(await tablist.count()).toBe(1);
         expect(await activeTab.getText()).toEqual('Tab # 1');
+    });
+
+    it('should have 10 tabs at the most', async () => {
+        let btn = element(by.id('new-tab-button')),
+            tablist = element.all(by.css('#tab-bar .nav-item')),
+            closeTabBtn = element(by.css('#tab-bar .nav-item.active .close-tab'));
+
+        expect(await btn.isEnabled()).toBe(true);
+        for (let i = 0; i < 9; i++) {
+            btn.click();
+        }
+        expect(await btn.isEnabled()).toBe(false);
+        expect(await tablist.count()).toBe(10);
     });
 });
