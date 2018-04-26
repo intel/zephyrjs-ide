@@ -282,7 +282,7 @@ export class DeviceToolbarComponent implements AfterViewInit {
         let extlen = fnsplit[1] ? fnsplit[1].length : 0;
 
         // Check the filename is in 8.3 format or not.
-        if (namelen === 0 || namelen > 8 || extlen > 3) {
+        if (namelen === 0 || namelen > 8 || extlen > 3 || extlen < 1) {
             return false;
         }
 
