@@ -247,6 +247,8 @@ Please see the
 [CONTRIBUTING](https://github.com/intel/zephyrjs-ide/blob/master/.github/CONTRIBUTING.md)
 file for guidelines.
 
+To report a security issue, please follow the procedure described [here](https://01.org/security).
+
 # License
 
 Apache 2.0
