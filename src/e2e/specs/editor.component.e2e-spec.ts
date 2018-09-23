@@ -28,8 +28,14 @@ describe('Editor', () => {
         btn.click();
 
         let tablist = element.all(by.css('#tab-bar .nav-item'));
-        expect(await tablist.count()).toBe(2);
 
+        expect(await tablist.count()).toBe(2);
+        let len = await tablist.count();
+
+        for (var i =0; i < len; i++) {
+            let txt = await tablist.get(i).getText();
+            console.log('Tab ' + i + ' = ' + txt);
+        }
         let closeTabBtn = element(by.css('#tab-bar .nav-item:last-child .close-tab'));
         closeTabBtn.click();
         expect(await tablist.count()).toBe(1);
